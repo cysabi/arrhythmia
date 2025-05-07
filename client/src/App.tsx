@@ -1,3 +1,4 @@
+import Board from './components/Board/Board';
 import type { TurnPayload } from "./types";
 
 export const sampleTurnList: TurnPayload[] = [
@@ -28,7 +29,11 @@ export const sampleTurnList: TurnPayload[] = [
 ];
 
 function App() {
-  return <h1 className="text-3xl font-bold underline">Hello world!</h1>;
+  return (
+    <>
+      <Board />
+    </>
+  );
 }
 
 export default App;
