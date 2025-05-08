@@ -36,6 +36,8 @@ type Player struct {
 	lastValidTurn int
 }
 
+const PORT = ":5174"
+
 func main() {
 	m := melody.New()
 
@@ -45,6 +47,8 @@ func main() {
 
 	// listenFor MovePayload
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
+
+		log.Println(string(msg))
 		// turn := TurnPayload{} // msg
 
 		m.Broadcast(msg)
@@ -57,11 +61,10 @@ func main() {
 		// ~ ~ else : broadcast move to other player
 
 	})
-	port := "5174"
 
-	log.Println("Server started on localhost:" + port)
+	log.Println("Server started on localhost" + PORT)
 
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
+	if err := http.ListenAndServe(PORT, nil); err != nil {
 		log.Fatal(err)
 	}
 }
