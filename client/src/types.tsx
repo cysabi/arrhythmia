@@ -3,7 +3,7 @@ export type Direction = "up" | "down" | "left" | "right";
 export type Action = `move${Capitalize<Direction>}` | "skip" | "shoot";
 
 export type TurnPayload = {
-  playerId: string;
+  playerId: PlayerId;
   turnCount: number;
   action: Action;
   checksum: string;
@@ -14,22 +14,25 @@ export type CatchupPayload = {
 };
 
 // spawn entities representation
-export type Player = {
-  playerId: string;
-  position: [number, number];
-};
+export type PlayerId = string;
+export type Entity = Player | Fireball;
 
-export type Entity = Fire;
-export type Fire = {
-  spawnTurnCount: number;
-  spawnPosition: [number, number];
-  direction: Direction;
+export type Player = {
+  type: "player";
+  id: PlayerId;
+  position: [number, number];
+  facing: Direction;
+};
+export type Fireball = {
+  type: "fireball";
+  owner: PlayerId;
+  position: [number, number];
+  facing: Direction;
 };
 
 // convert to board state
 export type GameState = {
-  board: Tile[][];
-  players: Player[];
+  map: Tile[][];
   entities: Entity[];
 };
-export type Tile = "playerSelf" | "playerOther" | "fire" | "wall" | null;
+export type Tile = "wall" | "empty";

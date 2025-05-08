@@ -1,4 +1,4 @@
-import Board from './components/Board/Board';
+import Board from "./components/Board/Board";
 import type { TurnPayload } from "./types";
 
 export const sampleTurnList: TurnPayload[] = [
@@ -11,7 +11,7 @@ export const sampleTurnList: TurnPayload[] = [
   {
     playerId: "2",
     turnCount: 0,
-    action: "shootFire",
+    action: "shoot",
     checksum: "abc123",
   },
   {

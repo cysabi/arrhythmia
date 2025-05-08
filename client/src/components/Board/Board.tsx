@@ -1,40 +1,58 @@
-import React from 'react';
-import Tile from './Tile';
+import React from "react";
+import Tile from "./Tile";
 // import playerImg from './player.png';
-import Player from './Player';
+import Player from "./Player";
+import type { GameState } from "../../types";
+
+const rows = 10;
+const cols = 10;
+
+const gameState: GameState = {
+  map: Array.from({ length: rows }, () =>
+    Array.from({ length: cols }, () => "empty")
+  ),
+  entities: [
+    {
+      type: "player",
+      id: "1",
+      position: [2, 2],
+      facing: "down",
+    },
+    {
+      type: "player",
+      id: "2",
+      position: [9, 9],
+      facing: "up",
+    },
+    // {
+    //   type: "fireball",
+    //   owner: "1",
+    //   position: [3, 3],
+    //   facing: "up",
+    // },
+  ],
+};
 
 const Board = () => {
-  const rows = 10;
-  const cols = 10;
-
-  const board = {
-    rows,
-    cols,
-    players: [
-      { x: 0, y: 0 },
-      { x: 2, y: 2 },
-      { x: 9, y: 9 },
-    ],
-  };
-
   return (
-    <div className='flex flex-col'>
-      {[...Array(board.rows).keys()].map((y) => (
-        <div className='flex flex-row' key={y}>
-          {[...Array(board.cols).keys()].map((x) => (
-            <div className='relative'>
-              {board.players
+    <div className="flex flex-col">
+      {gameState.map.map((_, y) => (
+        <div className="flex flex-row" key={y}>
+          {gameState.map[y].map((_, x) => (
+            <div className="relative">
+              {gameState.entities
                 .filter((player) => {
-                  return player.x === x && player.y === y;
+                  if (player.type === "player")
+                    return player.position[0] === x && player.position[1] === y;
                 })
                 .map((_player) => {
                   return (
-                    <div className='absolute'>
+                    <div className="absolute">
                       <Player />
                     </div>
                   );
                 })}
-              <Tile key={x} coords={{ x: x, y: y }} />
+              <Tile key={x} tile={"empty"} />
             </div>
           ))}
         </div>
