@@ -1,5 +1,5 @@
-export type Direction = "up" | "down" | "left" | "right";
-export type Action = `move${Capitalize<Direction>}` | "skip" | "shoot";
+export type Direction = 'up' | 'down' | 'left' | 'right';
+export type Action = `move${Capitalize<Direction>}` | 'skip' | 'shoot';
 
 // websocket communication types
 export type TurnPayload = {
@@ -18,13 +18,13 @@ export type PlayerId = string;
 export type Entity = Player | Fireball;
 
 export type Player = {
-  type: "player";
+  type: 'player';
   id: PlayerId;
   position: [number, number];
   facing: Direction;
 };
 export type Fireball = {
-  type: "fireball";
+  type: 'fireball';
   owner: PlayerId;
   position: [number, number];
   facing: Direction;
@@ -32,7 +32,10 @@ export type Fireball = {
 
 // convert to board state
 export type GameState = {
-  map: Tile[][];
+  map: {
+    height: number;
+    width: number;
+  };
   entities: Entity[];
 };
-export type Tile = "wall" | "empty";
+export type Tile = 'wall' | 'empty';
