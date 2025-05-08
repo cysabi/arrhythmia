@@ -1,7 +1,7 @@
-// websocket communication types
 export type Direction = "up" | "down" | "left" | "right";
 export type Action = `move${Capitalize<Direction>}` | "skip" | "shoot";
 
+// websocket communication types
 export type TurnPayload = {
   playerId: PlayerId;
   turnCount: number;

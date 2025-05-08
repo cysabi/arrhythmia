@@ -2,7 +2,6 @@ module github.com/cysabi/crypt-of-the-duel
 
 go 1.24.2
 
-require (
-	github.com/gorilla/websocket v1.5.3 // indirect
-	github.com/olahol/melody v1.2.1 // indirect
-)
+require github.com/olahol/melody v1.2.1
+
+require github.com/gorilla/websocket v1.5.3 // indirect

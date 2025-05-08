@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/olahol/melody"
@@ -44,7 +45,9 @@ func main() {
 
 	// listenFor MovePayload
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		turn := TurnPayload{} // msg
+		// turn := TurnPayload{} // msg
+
+		m.Broadcast(msg)
 
 		// ~ if higher move index
 		// ~ ~ generate new checksum
@@ -54,6 +57,11 @@ func main() {
 		// ~ ~ else : broadcast move to other player
 
 	})
+	port := "5174"
 
-	http.ListenAndServe(":5000", nil)
+	log.Println("Server started on localhost:" + port)
+
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
+	}
 }
