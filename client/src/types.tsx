@@ -38,4 +38,10 @@ export type GameState = {
   };
   entities: Entity[];
 };
+
+export type GlobalState = {
+	pendingTurns: TurnPayload[],
+	snapshots: Record<number, GameState>,
+}
+
 export type Tile = 'wall' | 'empty';
