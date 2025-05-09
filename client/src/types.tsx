@@ -40,6 +40,7 @@ export type GameState = {
 		width: number;
 	};
 	entities: Entity[];
+	turn: number;
 };
 
 export type GlobalState = {

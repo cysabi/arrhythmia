@@ -5,21 +5,38 @@ function getNextPosition(
 	p: Position,
 	map: GameState["map"],
 ): Position {
-	// TODO: use direction
-	return [entity.position[0], entity.position[1] + 1];
+	let nextPos: Position = [...p];
+	switch (d) {
+		case "down":
+			nextPos[1] += 1;
+			break;
+		case "up":
+			nextPos[1] -= 1;
+			break;
+		case "left":
+			nextPos[0] -= 1;
+			break;
+		case "right":
+			nextPos[0] += 1;
+			break;
+	}
 
-	// TODO: coerce to bounds
+	nextPos[0] = Math.min(Math.max(nextPos[0], 0), map.width);
+	nextPos[1] = Math.min(Math.max(nextPos[1], 0), map.height);
+
+	return nextPos;
 }
 
 export function applyAction(
 	action: Action,
 	currentState: GameState,
 ): GameState {
-	const { entities, map } = currentState;
+	const { turn, entities, map } = currentState;
 	// Create a new game state given action
 	return {
+		turn,
 		map: { ...map },
-		entities: entities.reduce((newEntities, entity) => {
+		entities: entities.reduce((newEntities: Entity[], entity) => {
 			if (entity.type !== "player" || entity.id !== action.playerId) {
 				newEntities.push(entity);
 				return newEntities;
@@ -32,6 +49,7 @@ export function applyAction(
 				case "shoot":
 					newEntities.push(entity);
 					newEntities.push({
+						id: getNextId(),
 						type: "fireball",
 						owner: entity.id,
 						position: getNextPosition(entity.facing, entity.position, map),
@@ -55,15 +73,28 @@ export function applyAction(
 	};
 }
 
-export function progressGame(
-	actions: Action[],
-	currentState: GameState,
-): GameState {
+function advanceTurn(game: GameState): GameState {
+	// TODO: Move projectiles, detect collisions
+	return game;
+}
+
+export function progressGame(actions: Action[], game: GameState): GameState {
 	// Apply the given actions and progress any turns that have
 	// completed in the action set (projectiles, etc)
-	// TODO: moving projectiles
-	// TODO: prevent collisions w/ walls?
+	if (actions.length === 0) return game;
+
+	const [action, ...rest] = actions;
+	if (game.turn < action.turnCount) advanceTurn(game);
+	const nextGameState = applyAction(action, game);
+	return progressGame(rest, nextGameState);
 }
+
+let id = 0;
+const getNextId = () => {
+	id++;
+
+	return id.toString();
+};
 
 const implicitInitialState: GameState = {
 	map: {
@@ -73,43 +104,50 @@ const implicitInitialState: GameState = {
 	entities: [
 		{
 			type: "player",
-			id: "1",
+			id: getNextId(),
 			position: [2, 10],
 			facing: "right",
 		},
 		{
 			type: "player",
-			id: "2",
+			id: getNextId(),
 			position: [18, 10],
 			facing: "left",
 		},
 	],
+	turn: 0,
 };
 
 // for dev only!
-export const sampleActionList: Action[] = [
+
+const sampleActionList: Action[] = [
 	{
 		playerId: "1",
-		turnCount: 0,
+		turnCount: 1,
 		action: "moveLeft",
 		checksum: "abc123",
 	},
 	{
 		playerId: "2",
-		turnCount: 0,
+		turnCount: 1,
 		action: "shoot",
 		checksum: "abc123",
 	},
 	{
 		playerId: "1",
-		turnCount: 1,
+		turnCount: 2,
 		action: "skip",
 		checksum: "abc1234",
 	},
 	{
 		playerId: "2",
-		turnCount: 1,
+		turnCount: 2,
 		action: "moveDown",
 		checksum: "abc1234",
 	},
 ];
+
+export const sampleGameState = progressGame(
+	sampleActionList,
+	implicitInitialState,
+);
