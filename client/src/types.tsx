@@ -1,9 +1,11 @@
 export type Direction = "up" | "down" | "left" | "right";
 export type ActionType = `move${Capitalize<Direction>}` | "skip" | "shoot";
 
+export type Position = [number, number];
+
 // websocket communication types
 export type Action = {
-	playerId: PlayerId;
+	playerId: ID;
 	turnCount: number;
 	action: ActionType;
 	checksum: string;
@@ -14,19 +16,20 @@ export type CatchupPayload = {
 };
 
 // spawn entities representation
-export type PlayerId = string;
+export type ID = string;
 export type Entity = Player | Fireball;
 
 export type Player = {
 	type: "player";
-	id: PlayerId;
-	position: [number, number];
+	id: ID;
+	position: Position;
 	facing: Direction;
 };
 export type Fireball = {
 	type: "fireball";
-	owner: PlayerId;
-	position: [number, number];
+	id: ID;
+	owner: Player["id"];
+	position: Position;
 	facing: Direction;
 };
 
