@@ -1,30 +1,37 @@
 import type { GameState, Action, Entity, Position, Direction } from "../types";
 
+const defaultHealth = 5;
+
+function isSamePosition(p1: Position, p2: Position): boolean {
+	return p1[0] === p2[0] && p1[1] === p2[1];
+}
+
 function getNextPosition(
-	d: Direction,
-	p: Position,
+	direction: Direction,
+	currentPosition: Position,
 	map: GameState["map"],
 ): Position {
-	let nextPos: Position = [...p];
-	switch (d) {
+	let nextPosition: Position = [...currentPosition];
+	switch (direction) {
 		case "down":
-			nextPos[1] += 1;
+			nextPosition[1] += 1;
 			break;
 		case "up":
-			nextPos[1] -= 1;
+			nextPosition[1] -= 1;
 			break;
 		case "left":
-			nextPos[0] -= 1;
+			nextPosition[0] -= 1;
 			break;
 		case "right":
-			nextPos[0] += 1;
+			nextPosition[0] += 1;
 			break;
 	}
 
-	nextPos[0] = Math.min(Math.max(nextPos[0], 0), map.width);
-	nextPos[1] = Math.min(Math.max(nextPos[1], 0), map.height);
+	// Enforce map boundary
+	nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width);
+	nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height);
 
-	return nextPos;
+	return nextPosition;
 }
 
 export function applyAction(
@@ -32,10 +39,10 @@ export function applyAction(
 	currentState: GameState,
 ): GameState {
 	const { turn, entities, map } = currentState;
-	// Create a new game state given action
+
 	return {
 		turn,
-		map: { ...map },
+		map,
 		entities: entities.reduce((newEntities: Entity[], entity) => {
 			if (entity.type !== "player" || entity.id !== action.playerId) {
 				newEntities.push(entity);
@@ -50,7 +57,7 @@ export function applyAction(
 					newEntities.push(entity);
 					newEntities.push({
 						id: getNextId(),
-						type: "fireball",
+						type: "projectile",
 						owner: entity.id,
 						position: getNextPosition(entity.facing, entity.position, map),
 						facing: entity.facing,
@@ -60,9 +67,14 @@ export function applyAction(
 				case "moveUp":
 				case "moveLeft":
 				case "moveRight":
+					// "moveDown" -> "down"
+					const direction = action.action
+						.replace("move", "")
+						.toLowerCase() as Direction;
 					newEntities.push({
 						...entity,
-						position: getNextPosition(entity.facing, entity.position, map),
+						facing: direction,
+						position: getNextPosition(direction, entity.position, map),
 					});
 
 					break;
@@ -74,8 +86,54 @@ export function applyAction(
 }
 
 function advanceTurn(game: GameState): GameState {
-	// TODO: Move projectiles, detect collisions
-	return game;
+	const { entities, map, turn, ...rest } = game;
+
+	// Build up a "linearized" map of where everything is to make
+	// collision detection a constant-time lookup
+	const hash = new Map<number, Entity>();
+	function positionToIndex(p: Position) {
+		return p[0] * map.width + p[1];
+	}
+
+	// 1. move projectiles and put in the map
+	entities
+		.filter((e) => e.type === "projectile")
+		.forEach((projectile) => {
+			const { facing, position } = projectile;
+			// If projectile hits a boundary and cannot move, it must go away
+			const nextPosition = getNextPosition(facing, position, map);
+			if (isSamePosition(nextPosition, position)) return;
+
+			// Put projectile in hashmap, checking for projectile <=> projectile collisions
+			const positionIdx = positionToIndex(nextPosition);
+			if (hash.has(positionIdx)) {
+				// collision -- goodbye to both
+				hash.delete(positionIdx);
+			} else {
+				hash.set(positionIdx, { ...projectile, position: nextPosition });
+			}
+		});
+
+	// 2. put players in the map, checking again for collisions
+	entities
+		.filter((e) => e.type === "player")
+		.forEach((player) => {
+			const positionIdx = positionToIndex(player.position);
+			if (hash.get(positionIdx)) {
+				// collision -- overwrite projectile and deal damage
+				hash.set(positionIdx, { ...player, health: player.health - 1 });
+			} else {
+				hash.set(positionIdx, { ...player });
+			}
+		});
+
+	return {
+		map,
+		turn: turn + 1,
+		// convert map back to a list
+		entities: [...hash.values()],
+		...rest,
+	};
 }
 
 export function progressGame(actions: Action[], game: GameState): GameState {
@@ -84,11 +142,13 @@ export function progressGame(actions: Action[], game: GameState): GameState {
 	if (actions.length === 0) return game;
 
 	const [action, ...rest] = actions;
-	if (game.turn < action.turnCount) advanceTurn(game);
+	if (game.turn < action.turnCount) game = advanceTurn(game);
 	const nextGameState = applyAction(action, game);
 	return progressGame(rest, nextGameState);
 }
 
+// TODO: this is just a hack -- need something that's consistent
+// across peers
 let id = 0;
 const getNextId = () => {
 	id++;
@@ -107,12 +167,14 @@ const implicitInitialState: GameState = {
 			id: getNextId(),
 			position: [2, 10],
 			facing: "right",
+			health: defaultHealth,
 		},
 		{
 			type: "player",
 			id: getNextId(),
 			position: [18, 10],
 			facing: "left",
+			health: defaultHealth,
 		},
 	],
 	turn: 0,
@@ -124,7 +186,7 @@ const sampleActionList: Action[] = [
 	{
 		playerId: "1",
 		turnCount: 1,
-		action: "moveLeft",
+		action: "moveRight",
 		checksum: "abc123",
 	},
 	{
@@ -136,13 +198,49 @@ const sampleActionList: Action[] = [
 	{
 		playerId: "1",
 		turnCount: 2,
-		action: "skip",
+		action: "moveUp",
 		checksum: "abc1234",
 	},
 	{
 		playerId: "2",
 		turnCount: 2,
 		action: "moveDown",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "1",
+		turnCount: 3,
+		action: "skip",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "2",
+		turnCount: 3,
+		action: "skip",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "1",
+		turnCount: 4,
+		action: "skip",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "2",
+		turnCount: 4,
+		action: "skip",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "1",
+		turnCount: 5,
+		action: "skip",
+		checksum: "abc1234",
+	},
+	{
+		playerId: "2",
+		turnCount: 5,
+		action: "skip",
 		checksum: "abc1234",
 	},
 ];

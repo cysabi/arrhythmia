@@ -1,6 +1,16 @@
 import React from "react";
-import type { GameState } from "../../types";
+import type { Entity, GameState } from "../../types";
 import Player from "./Player";
+import Projectile from "./Projectile";
+
+function renderEntity(e: Entity) {
+	switch (e.type) {
+		case "player":
+			return <Player />;
+		case "projectile":
+			return <Projectile />;
+	}
+}
 
 const Board = ({ gameState }: { gameState: GameState }) => {
 	return (
@@ -20,13 +30,13 @@ const Board = ({ gameState }: { gameState: GameState }) => {
 				const y = entity.position[1];
 				return (
 					<div
-						key={entity?.id || entity?.owner}
+						key={entity.id}
 						style={{
 							gridColumn: x,
 							gridRow: y,
 						}}
 					>
-						<Player />
+						{renderEntity(entity)}
 					</div>
 				);
 			})}

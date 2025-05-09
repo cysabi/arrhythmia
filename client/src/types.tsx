@@ -17,16 +17,17 @@ export type CatchupPayload = {
 
 // spawn entities representation
 export type ID = string;
-export type Entity = Player | Fireball;
+export type Entity = Player | Projectile;
 
 export type Player = {
 	type: "player";
 	id: ID;
 	position: Position;
 	facing: Direction;
+	health: number;
 };
-export type Fireball = {
-	type: "fireball";
+export type Projectile = {
+	type: "projectile";
 	id: ID;
 	owner: Player["id"];
 	position: Position;
