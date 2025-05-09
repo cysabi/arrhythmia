@@ -1,57 +1,89 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"sync/atomic"
 
 	"github.com/olahol/melody"
 )
 
 type Action string
+type PlayerId string
 
 const (
 	MoveUp    Action = "moveUp"
-	MoveDown         = "moveDown"
-	MoveLeft         = "moveLeft"
-	MoveRight        = "moveRight"
-	Skip             = "skip"
-	Shoot            = "shoot"
+	MoveDown  Action = "moveDown"
+	MoveLeft  Action = "moveLeft"
+	MoveRight Action = "moveRight"
+	Skip      Action = "skip"
+	Shoot     Action = "shoot"
 )
 
 type TurnPayload struct {
-	playerId  string
-	turnCount int
-	action    string
-	checksum  string
+	playerId PlayerId
+	index    int
+	action   string
+	checksum string
+}
+
+type SessionPlayer struct {
+	playerId           PlayerId
+	lastValidTurnIndex int
 }
 
 type GameState struct {
-	turnHistory []TurnPayload
-	players     []Player
-	checksum    string
+	currentTurnIndex int
 }
-
-type Player struct {
-	id            string
-	lastValidTurn int
-}
-
-const PORT = ":5174"
 
 func main() {
 	m := melody.New()
+
+	gameState := GameState{}
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		m.HandleRequest(w, r)
 	})
 
+	m.HandleConnect(func(s *melody.Session) {
+		s.Set("player", SessionPlayer{playerId: generatePid()})
+	})
+
 	// listenFor MovePayload
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 
-		log.Println(string(msg))
-		// turn := TurnPayload{} // msg
+		msgType := "turn"
+		switch msgType {
+		case "turn":
+			turn := TurnPayload{
+				index:    0,
+				action:   "moveLeft",
+				checksum: "abc123",
+			}
 
-		m.Broadcast(msg)
+			if turn.index > gameState.currentTurnIndex {
+				gameState.currentTurnIndex = turn.index
+			}
+
+			if turn.index < gameState.currentTurnIndex {
+				// catchup payload
+			} else if false { // todo checksum
+				// catchup payload
+			}
+
+			m.BroadcastOthers(msg, s)
+
+			// store just position of entities and their properties including players
+			// on move, update board state
+			// on recieve move, update board state
+			// on checksum save snapshot of list
+			// on rewind play from snapshot to
+			// history of list of entities
+
+			// turn := "0:moveLeft:abc123"
+
+		}
 
 		// ~ if higher move index
 		// ~ ~ generate new checksum
@@ -67,4 +99,13 @@ func main() {
 	if err := http.ListenAndServe(PORT, nil); err != nil {
 		log.Fatal(err)
 	}
+}
+
+const PORT = ":5174"
+
+var pidCounter atomic.Uint64
+
+func generatePid() PlayerId {
+	pidCounter.Add(1)
+	return PlayerId(fmt.Sprintf("player-%d", pidCounter.Load()))
 }
