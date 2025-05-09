@@ -1,6 +1,5 @@
 import React from "react";
 import type { GameState } from "../../types";
-// import playerImg from './player.png';
 import Player from "./Player";
 
 const Board = ({ gameState }: { gameState: GameState }) => {
