@@ -8,14 +8,14 @@ import (
 )
 
 type Game struct {
-	m                *melody.Melody
-	currentBeat      int
-	currentBeatActed map[PlayerId]bool
+	m             *melody.Melody
+	beatIndex     int
+	actedThisBeat map[PlayerId]bool
 }
 
 func (g Game) New() Game {
-	g.currentBeat = 0
-	g.currentBeatActed = make(map[PlayerId]bool)
+	g.beatIndex = 0
+	g.actedThisBeat = make(map[PlayerId]bool)
 	return g
 }
 
@@ -27,15 +27,15 @@ func (g *Game) Tick() {
 
 	for _, session := range sessions {
 		pid := session.MustGet("pid").(PlayerId)
-		if !g.currentBeatActed[pid] {
+		if !g.actedThisBeat[pid] {
 			PayloadTurn{
-				currentBeat: g.currentBeat,
-				action:      ActionSkip,
+				beatIndex: g.beatIndex,
+				action:    ActionSkip,
 			}.Broadcast(g.m, pid)
 		}
 	}
-	g.currentBeat += 1
-	g.currentBeatActed = make(map[PlayerId]bool)
+	g.beatIndex += 1
+	g.actedThisBeat = make(map[PlayerId]bool)
 }
 
 func main() {
@@ -56,11 +56,11 @@ func main() {
 
 		switch turn := payload.(type) {
 		case PayloadTurn:
-			if turn.currentBeat > game.currentBeat {
+			if turn.beatIndex > game.beatIndex {
 				game.Tick()
 			}
-			if turn.currentBeat == game.currentBeat {
-				s.Set("currentTurnMsg", msg)
+			if turn.beatIndex == game.beatIndex {
+				game.actedThisBeat[pid] = true
 				turn.Broadcast(m, pid)
 			}
 		}

@@ -31,18 +31,8 @@ func (PayloadStart) New(attr []string) Payload {
 }
 
 type PayloadTurn struct {
-	currentBeat int
-	action      TurnAction
-}
-
-func (p PayloadTurn) Broadcast(m *melody.Melody, pid PlayerId) {
-	payload := strings.Join([]string{
-		string(pid),
-		strconv.Itoa(p.currentBeat),
-		strconv.Itoa(int(p.action)),
-	}, ":")
-
-	m.Broadcast([]byte(payload))
+	beatIndex int
+	action    TurnAction
 }
 
 func (PayloadTurn) New(attr []string) Payload {
@@ -56,9 +46,19 @@ func (PayloadTurn) New(attr []string) Payload {
 	}
 
 	return PayloadTurn{
-		currentBeat: index,
-		action:      TurnAction(action),
+		beatIndex: index,
+		action:    TurnAction(action),
 	}
+}
+
+func (p PayloadTurn) Broadcast(m *melody.Melody, pid PlayerId) {
+	payload := strings.Join([]string{
+		string(pid),
+		strconv.Itoa(p.beatIndex),
+		strconv.Itoa(int(p.action)),
+	}, ":")
+
+	m.Broadcast([]byte(payload))
 }
 
 type TurnAction int
