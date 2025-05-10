@@ -1,7 +1,6 @@
-import React from "react";
-import Board from "./components/Board/Board";
-import useWebsocket from "./useWebsocket";
-import { sampleGameState } from "./util/game-logic";
+import Board from "./BoardView";
+import useWebsocket from "./WebSocketClient/useWebsocket";
+import { sampleGameState } from "./GameStateManager/game-logic";
 
 function App() {
   const [connected, send] = useWebsocket();
@@ -20,8 +19,7 @@ function App() {
                 playerId: "1",
                 turnCount: 0,
                 action: "moveLeft",
-                checksum: "abc123",
-              }),
+              })
             );
           }}
         >

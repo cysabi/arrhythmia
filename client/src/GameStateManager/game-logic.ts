@@ -9,7 +9,7 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  map: GameState["map"],
+  map: GameState["map"]
 ): Position {
   let nextPosition: Position = [...currentPosition];
   switch (direction) {
@@ -36,7 +36,7 @@ function getNextPosition(
 
 export function applyAction(
   action: Action,
-  currentState: GameState,
+  currentState: GameState
 ): GameState {
   const { turn, entities, map } = currentState;
 
@@ -187,65 +187,55 @@ const sampleActionList: Action[] = [
     playerId: "1",
     turnCount: 1,
     action: "moveRight",
-    checksum: "abc123",
   },
   {
     playerId: "2",
     turnCount: 1,
     action: "shoot",
-    checksum: "abc123",
   },
   {
     playerId: "1",
     turnCount: 2,
     action: "moveUp",
-    checksum: "abc1234",
   },
   {
     playerId: "2",
     turnCount: 2,
     action: "moveDown",
-    checksum: "abc1234",
   },
   {
     playerId: "1",
     turnCount: 3,
     action: "skip",
-    checksum: "abc1234",
   },
   {
     playerId: "2",
     turnCount: 3,
     action: "skip",
-    checksum: "abc1234",
   },
   {
     playerId: "1",
     turnCount: 4,
     action: "skip",
-    checksum: "abc1234",
   },
   {
     playerId: "2",
     turnCount: 4,
     action: "skip",
-    checksum: "abc1234",
   },
   {
     playerId: "1",
     turnCount: 5,
     action: "skip",
-    checksum: "abc1234",
   },
   {
     playerId: "2",
     turnCount: 5,
     action: "skip",
-    checksum: "abc1234",
   },
 ];
 
 export const sampleGameState = progressGame(
   sampleActionList,
-  implicitInitialState,
+  implicitInitialState
 );

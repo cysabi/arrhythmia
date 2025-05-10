@@ -1,11 +1,5 @@
 import React from "react";
 
-// the board is represented as a list of entities and components
-// progressTurn loops over all types of components and applies effects
-// THEN player moves happen after. if the player presses early (or opponent happens early) queue it to happen after
-// otherwise apply moves on recieve
-// save snapshot of board on recieve if
-
 const useWebsocket = (): [false, null] | [true, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 

@@ -8,7 +8,6 @@ export type Action = {
   playerId: ID;
   turnCount: number;
   action: ActionType;
-  checksum: string;
 };
 
 export type CatchupPayload = {
@@ -33,6 +32,11 @@ export type Projectile = {
   position: Position;
   facing: Direction;
 };
+export type Wall = {
+  type: "wall";
+  id: ID;
+  position: Position;
+};
 
 // convert to board state
 export type GameState = {
@@ -48,5 +52,3 @@ export type GlobalState = {
   pendingTurns: Action[];
   snapshots: Record<number, GameState>;
 };
-
-export type Tile = "wall" | "empty";
