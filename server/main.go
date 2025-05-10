@@ -22,10 +22,8 @@ const (
 )
 
 type TurnPayload struct {
-	playerId PlayerId
-	index    int
-	action   string
-	checksum string
+	beatIndex int
+	action    string
 }
 
 type SessionPlayer struct {
@@ -34,7 +32,7 @@ type SessionPlayer struct {
 }
 
 type GameState struct {
-	currentTurnIndex int
+	currentBeatIndex int
 }
 
 func main() {
@@ -57,24 +55,21 @@ func main() {
 		switch msgType {
 		case "turn":
 			turn := TurnPayload{
-				index:    0,
-				action:   "moveLeft",
-				checksum: "abc123",
+				beatIndex: 0,
+				action:    "moveLeft",
 			}
 
-			if turn.index > gameState.currentTurnIndex {
-				gameState.currentTurnIndex = turn.index
+			// proceed server beat by one
+			if turn.beatIndex > gameState.currentBeatIndex {
+				gameState.currentBeatIndex = turn.beatIndex
 			}
 
-			if turn.index < gameState.currentTurnIndex {
-				// catchup payload
-			} else if false { // todo checksum
-				// catchup payload
+			if turn.beatIndex < gameState.currentBeatIndex {
+				// - - in this case, send a catchup payload with moves from last valid move > current move
+			} else {
+				m.BroadcastOthers(msg, s)
 			}
 
-			m.BroadcastOthers(msg, s)
-
-			// store just position of entities and their properties including players
 			// on move, update board state
 			// on recieve move, update board state
 			// on checksum save snapshot of list
@@ -84,14 +79,6 @@ func main() {
 			// turn := "0:moveLeft:abc123"
 
 		}
-
-		// ~ if higher move index
-		// ~ ~ generate new checksum
-
-		// ~ compare checksum
-		// ~ ~ if invalid checksum : broadcast CatchupPayload
-		// ~ ~ else : broadcast move to other player
-
 	})
 
 	log.Println("Server started on localhost" + PORT)
