@@ -1,5 +1,25 @@
 import type { GameState, Action, Entity, Position, Direction } from "../types";
 
+// - on client: construct history of turns
+// 	- take snapshots all the way up to the last filled turn
+// 	- have turn buffer
+// 	- on recieve:
+// 		- if prev turn:
+// 			- rollback to prev board state
+// 			- reapply turn buffer
+// 			- take? snapshot
+// 		- else:
+// 			- play(turn)
+// 	- on input:
+// 		- if timed well: play(turn)
+// 	- play (turn)
+// 		- add to buffer
+// 		- if tick passed, apply move now
+// 	- tick:
+// 		- change entities
+//      - ECS, for each C, run all E
+// 		- if move, apply move
+
 const defaultHealth = 5;
 
 function isSamePosition(p1: Position, p2: Position): boolean {
