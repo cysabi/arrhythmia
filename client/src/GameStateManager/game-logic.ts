@@ -48,8 +48,8 @@ function getNextPosition(
   }
 
   // Enforce map boundary
-  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width);
-  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height);
+  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width-1);
+  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height-1);
 
   return nextPosition;
 }
@@ -69,7 +69,7 @@ export function applyAction(
         return newEntities;
       }
 
-      switch (action.action) {
+      switch (action.actionType) {
         case "skip":
           newEntities.push(entity);
           break;
@@ -88,7 +88,7 @@ export function applyAction(
         case "moveLeft":
         case "moveRight":
           // "moveDown" -> "down"
-          const direction = action.action
+          const direction = action.actionType
             .replace("move", "")
             .toLowerCase() as Direction;
           newEntities.push({
@@ -206,52 +206,52 @@ const sampleActionList: Action[] = [
   {
     playerId: "1",
     turnCount: 1,
-    action: "moveRight",
+    actionType: "moveRight",
   },
   {
     playerId: "2",
     turnCount: 1,
-    action: "shoot",
+    actionType: "shoot",
   },
   {
     playerId: "1",
     turnCount: 2,
-    action: "moveUp",
+    actionType: "moveUp",
   },
   {
     playerId: "2",
     turnCount: 2,
-    action: "moveDown",
+    actionType: "moveDown",
   },
   {
     playerId: "1",
     turnCount: 3,
-    action: "skip",
+    actionType: "skip",
   },
   {
     playerId: "2",
     turnCount: 3,
-    action: "skip",
+    actionType: "skip",
   },
   {
     playerId: "1",
     turnCount: 4,
-    action: "skip",
+    actionType: "skip",
   },
   {
     playerId: "2",
     turnCount: 4,
-    action: "skip",
+    actionType: "skip",
   },
   {
     playerId: "1",
     turnCount: 5,
-    action: "skip",
+    actionType: "skip",
   },
   {
     playerId: "2",
     turnCount: 5,
-    action: "skip",
+    actionType: "skip",
   },
 ];
 

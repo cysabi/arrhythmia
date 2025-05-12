@@ -7,7 +7,7 @@ export type Position = [number, number];
 export type Action = {
   playerId: ID;
   turnCount: number;
-  action: ActionType;
+  actionType: ActionType;
 };
 
 export type CatchupPayload = {
