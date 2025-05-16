@@ -19,7 +19,8 @@ func (g Game) New() Game {
 	return g
 }
 
-func (g *Game) Tick() {
+// next beat happened! server moves game forward one tick and fills in missing payloads
+func (g *Game) BroadcastMissing() {
 	sessions, err := g.m.Sessions()
 	if err != nil {
 		panic(err)
@@ -34,8 +35,6 @@ func (g *Game) Tick() {
 			}.Broadcast(g.m, pid)
 		}
 	}
-	g.beatIndex += 1
-	g.actedThisBeat = make(map[PlayerId]bool)
 }
 
 func main() {
@@ -50,6 +49,16 @@ func main() {
 		s.Set("pid", GeneratePlayerId())
 	})
 
+	//
+	//  p1: M   M   M   M   M
+	//  p2: M   M   s   s	M
+	//
+	// player makes move (send message)
+	// server receives message -> m.HandleMessage
+	// 	if player turn is ahead of game turn, call BroadcastMissing() which has all other players broadcast a skip move
+	// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
+	//  broadcast move to other players so they're at most 1 turn behind
+
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		pid := s.MustGet("pid").(PlayerId)
 		payload := newPayload(string(msg))
@@ -57,7 +66,9 @@ func main() {
 		switch turn := payload.(type) {
 		case PayloadTurn:
 			if turn.beatIndex > game.beatIndex {
-				game.Tick()
+				game.BroadcastMissing()
+				game.actedThisBeat = make(map[PlayerId]bool)
+				game.beatIndex += 1
 			}
 			if turn.beatIndex == game.beatIndex {
 				game.actedThisBeat[pid] = true
