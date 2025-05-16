@@ -1,4 +1,4 @@
-import type { GameState, Action, Entity, Position, Direction } from "../types";
+import type { GameState, ActionPayload, Entity, Position, Direction } from "../types";
 
 const defaultHealth = 5;
 
@@ -35,7 +35,7 @@ function getNextPosition(
 }
 
 export function applyAction(
-  action: Action,
+  action: ActionPayload,
   currentState: GameState
 ): GameState {
   const { turn, entities, map } = currentState;
@@ -49,14 +49,13 @@ export function applyAction(
         return newEntities;
       }
 
-      switch (action.actionType) {
+      switch (action.action) {
         case "skip":
           newEntities.push(entity);
           break;
         case "shoot":
           newEntities.push(entity);
           newEntities.push({
-            id: getNextId(),
             type: "projectile",
             owner: entity.id,
             position: getNextPosition(entity.facing, entity.position, map),
@@ -68,7 +67,7 @@ export function applyAction(
         case "moveLeft":
         case "moveRight":
           // "moveDown" -> "down"
-          const direction = action.actionType
+          const direction = action.action
             .replace("move", "")
             .toLowerCase() as Direction;
           newEntities.push({
@@ -85,12 +84,12 @@ export function applyAction(
   };
 }
 
-function advanceTurn(game: GameState): GameState {
+function tick(game: GameState): GameState {
   const { entities, map, turn, ...rest } = game;
 
   // Build up a "linearized" map of where everything is to make
   // collision detection a constant-time lookup
-  const hash = new Map<number, Entity>();
+  const positionsMap = new Map<number, Entity>();
   function positionToIndex(p: Position) {
     return p[0] * map.width + p[1];
   }
@@ -106,11 +105,11 @@ function advanceTurn(game: GameState): GameState {
 
       // Put projectile in hashmap, checking for projectile <=> projectile collisions
       const positionIdx = positionToIndex(nextPosition);
-      if (hash.has(positionIdx)) {
+      if (positionsMap.has(positionIdx)) {
         // collision -- goodbye to both
-        hash.delete(positionIdx);
+        positionsMap.delete(positionIdx);
       } else {
-        hash.set(positionIdx, { ...projectile, position: nextPosition });
+        positionsMap.set(positionIdx, { ...projectile, position: nextPosition });
       }
     });
 
@@ -119,11 +118,11 @@ function advanceTurn(game: GameState): GameState {
     .filter((e) => e.type === "player")
     .forEach((player) => {
       const positionIdx = positionToIndex(player.position);
-      if (hash.get(positionIdx)) {
+      if (positionsMap.get(positionIdx)) {
         // collision -- overwrite projectile and deal damage
-        hash.set(positionIdx, { ...player, health: player.health - 1 });
+        positionsMap.set(positionIdx, { ...player, health: player.health - 1 });
       } else {
-        hash.set(positionIdx, { ...player });
+        positionsMap.set(positionIdx, { ...player });
       }
     });
 
@@ -131,31 +130,25 @@ function advanceTurn(game: GameState): GameState {
     map,
     turn: turn + 1,
     // convert map back to a list
-    entities: [...hash.values()],
+    entities: [...positionsMap.values()],
     ...rest,
   };
 }
 
-export function progressGame(actions: Action[], game: GameState): GameState {
+export function progressGame(actions: ActionPayload[], game: GameState): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
   if (actions.length === 0) return game;
-
   const [action, ...rest] = actions;
-  if (game.turn < action.turnCount) game = advanceTurn(game);
+
+  if (game.turn < action.turnNumber) game = tick(game);
   const nextGameState = applyAction(action, game);
+  
   return progressGame(rest, nextGameState);
 }
 
 // TODO: this is just a hack -- need something that's consistent
 // across peers
-let id = 0;
-const getNextId = () => {
-  id++;
-
-  return id.toString();
-};
-
 const implicitInitialState: GameState = {
   map: {
     height: 20,
@@ -164,14 +157,14 @@ const implicitInitialState: GameState = {
   entities: [
     {
       type: "player",
-      id: getNextId(),
+      id: "1",
       position: [2, 10],
       facing: "right",
       health: defaultHealth,
     },
     {
       type: "player",
-      id: getNextId(),
+      id: "2",
       position: [18, 10],
       facing: "left",
       health: defaultHealth,
@@ -182,56 +175,56 @@ const implicitInitialState: GameState = {
 
 // for dev only!
 
-const sampleActionList: Action[] = [
+const sampleActionList: ActionPayload[] = [
   {
     playerId: "1",
-    turnCount: 1,
-    actionType: "moveRight",
+    turnNumber: 1,
+    action: "moveRight",
   },
   {
     playerId: "2",
-    turnCount: 1,
-    actionType: "shoot",
+    turnNumber: 1,
+    action: "shoot",
   },
   {
     playerId: "1",
-    turnCount: 2,
-    actionType: "moveUp",
+    turnNumber: 2,
+    action: "moveUp",
   },
   {
     playerId: "2",
-    turnCount: 2,
-    actionType: "moveDown",
+    turnNumber: 2,
+    action: "moveDown",
   },
   {
     playerId: "1",
-    turnCount: 3,
-    actionType: "skip",
+    turnNumber: 3,
+    action: "skip",
   },
   {
     playerId: "2",
-    turnCount: 3,
-    actionType: "skip",
+    turnNumber: 3,
+    action: "skip",
   },
   {
     playerId: "1",
-    turnCount: 4,
-    actionType: "skip",
+    turnNumber: 4,
+    action: "skip",
   },
   {
     playerId: "2",
-    turnCount: 4,
-    actionType: "skip",
+    turnNumber: 4,
+    action: "skip",
   },
   {
     playerId: "1",
-    turnCount: 5,
-    actionType: "skip",
+    turnNumber: 5,
+    action: "skip",
   },
   {
     playerId: "2",
-    turnCount: 5,
-    actionType: "skip",
+    turnNumber: 5,
+    action: "skip",
   },
 ];
 
