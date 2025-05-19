@@ -1,6 +1,8 @@
 import React from "react";
 
-const useWebsocket = (): [false, null] | [true, WebSocket["send"]] => {
+const useWebsocket = (
+  onMessage: (data: string) => void
+): [false, null] | [true, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 
   const [connected, setConnected] = React.useState(false);
@@ -19,7 +21,7 @@ const useWebsocket = (): [false, null] | [true, WebSocket["send"]] => {
 
     ws.current.addEventListener("message", (event) => {
       console.debug("ws::message", event);
-      console.log(JSON.parse(event.data));
+      onMessage(event.data);
     });
 
     ws.current.addEventListener("error", (event) => {

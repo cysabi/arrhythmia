@@ -29,7 +29,7 @@ func (g *Game) BroadcastMissing() {
 	for _, session := range sessions {
 		pid := session.MustGet("pid").(PlayerId)
 		if !g.actedThisBeat[pid] {
-			PayloadTurn{
+			PayloadAction{
 				beatIndex: g.beatIndex,
 				action:    ActionSkip,
 			}.Broadcast(g.m, pid)
@@ -46,7 +46,9 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
-		s.Set("pid", GeneratePlayerId())
+		pid := GeneratePlayerId()
+		s.Set("pid", pid)
+		m.Broadcast([]byte(pid))
 	})
 
 	//
@@ -64,7 +66,7 @@ func main() {
 		payload := newPayload(string(msg))
 
 		switch turn := payload.(type) {
-		case PayloadTurn:
+		case PayloadAction:
 			if turn.beatIndex > game.beatIndex {
 				game.BroadcastMissing()
 				game.actedThisBeat = make(map[PlayerId]bool)
