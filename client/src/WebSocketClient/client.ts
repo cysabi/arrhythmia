@@ -4,7 +4,7 @@ import type { GameState } from "../types";
 // construct history of turns
 
 // turn - the collection of actions that players do at the same time??
-// t     
+// t
 // 0          P         < queue()                   add player action to queue, dont run progressGame
 // 0          .
 // 0          .
@@ -17,12 +17,11 @@ import type { GameState } from "../types";
 // ActionPayload { player + turnNumber + action }
 // Action { move }
 
-// 
+//
 //  TODO: distinguish optimistic client vs confirmed by server actions
 
 // 	- take snapshots all the way up to the last filled turn
 // 	- have turn buffer
-
 
 //  - on (websocket message)
 //    - if overrides optimistic: rollback
@@ -33,45 +32,76 @@ import type { GameState } from "../types";
 // 		- if late  : progressGame(action)
 
 //  - on tick  : progressGame(ActionsQueue)
+import { useState } from "react";
+import { sampleGameState } from "../GameStateManager/game-logic";
 
-export type GlobalState = {
-  pendingTurns: ActionPayload[];
-  snapshots: Record<number, GameState>;
+type GlobalState = {
+	displayedState: GameState;
+	serverValidated: {
+		gameState: GameState;
+		actions: ActionPayload[];
+	};
+	pendingActions: ActionPayload[];
 };
 
+export function useGameEngine() {
+	const [state, setState] = useState<GlobalState>({
+		view: samepleGameState, // TODO: replace with inital
+		serverValidated: {
+			gameState: {}, // snapshot of previous
+			actions: [], // actions between serverValidated gameState and current
+		},
+		pendingActions: [], // actions we have not added to current game state (waiting for next tick)
+	});
 
-declare var turnBuffer: ActionPayload[];
+	setInterval(function () {
+		// process tick
+	}, 1000);
+
+	// TODO: on connect to server, initialize default game state w/ player ids
+
+	// TODO: bind to incoming messages from webocket, writing actions
+	// onto game state
+	// IF we get a message that's for the prior "turn" we already
+	// "ticked", go back to server validated and rerun all actions since
+
+	// TODO: expose function to game component to be able to send moves
+
+	// TODO: synchronized music playback
+
+	return state;
+}
 
 declare function messageToPayload(msg: string): ActionPayload;
 
 // will find all moves from turnBuffer[currentMoveIndex] AND selfmove and apply to game
 const gameTick = (
-  game: Entities,
-  turns: TurnsSinceSnapshot,
-  selfTurn: ClientTurn
+	game: Entities,
+	turns: TurnsSinceSnapshot,
+	selfTurn: ClientTurn,
 ): Entities => {
-  applyMove;
+	applyMove;
 };
 
 const processInput = (selfTurn: ClientTurn) => selfTurn;
 
 const recieveMove = (t: ActionPayload): Entities => {
-  addTurnToBuffer;
-  if (true) {
-    rollback;
-  }
+	addTurnToBuffer;
+	if (true) {
+		rollback;
+	}
 };
 
 const addTurnToBuffer = (
-  turns: TurnsSinceSnapshot,
-  turn: ActionPayload
+	turns: TurnsSinceSnapshot,
+	turn: ActionPayload,
 ): TurnsSinceSnapshot => {};
 
 const rollback = (snpashot: Entities, turns: TurnsSinceSnapshot): Entities => {
-  applyMove;
+	applyMove;
 };
 
 declare function maybeSnapshot(
-  game: Entities,
-  turns: TurnsSinceSnapshot
+	game: Entities,
+	turns: TurnsSinceSnapshot,
 ): Entities;
