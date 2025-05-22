@@ -1,4 +1,10 @@
-import type { GameState, ActionPayload, Entity, Position, Direction } from "../types";
+import type {
+  GameState,
+  ActionPayload,
+  Entity,
+  Position,
+  Direction,
+} from "../types";
 
 const defaultHealth = 5;
 
@@ -28,8 +34,8 @@ function getNextPosition(
   }
 
   // Enforce map boundary
-  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width-1);
-  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height-1);
+  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width - 1);
+  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height - 1);
 
   return nextPosition;
 }
@@ -109,7 +115,10 @@ function tick(game: GameState): GameState {
         // collision -- goodbye to both
         positionsMap.delete(positionIdx);
       } else {
-        positionsMap.set(positionIdx, { ...projectile, position: nextPosition });
+        positionsMap.set(positionIdx, {
+          ...projectile,
+          position: nextPosition,
+        });
       }
     });
 
@@ -135,16 +144,19 @@ function tick(game: GameState): GameState {
   };
 }
 
-export function progressGame(actions: ActionPayload[], game: GameState): GameState {
+export function progressGame(
+  game: GameState,
+  actions: ActionPayload[]
+): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
   if (actions.length === 0) return game;
   const [action, ...rest] = actions;
 
-  if (game.turn < action.turnNumber) game = tick(game);
+  if (game.turn < action.turnCount) game = tick(game);
   const nextGameState = applyAction(action, game);
-  
-  return progressGame(rest, nextGameState);
+
+  return progressGame(nextGameState, rest);
 }
 
 // TODO: this is just a hack -- need something that's consistent
@@ -178,57 +190,57 @@ const implicitInitialState: GameState = {
 const sampleActionList: ActionPayload[] = [
   {
     playerId: "1",
-    turnNumber: 1,
+    turnCount: 1,
     action: "moveRight",
   },
   {
     playerId: "2",
-    turnNumber: 1,
+    turnCount: 1,
     action: "shoot",
   },
   {
     playerId: "1",
-    turnNumber: 2,
+    turnCount: 2,
     action: "moveUp",
   },
   {
     playerId: "2",
-    turnNumber: 2,
+    turnCount: 2,
     action: "moveDown",
   },
   {
     playerId: "1",
-    turnNumber: 3,
+    turnCount: 3,
     action: "skip",
   },
   {
     playerId: "2",
-    turnNumber: 3,
+    turnCount: 3,
     action: "skip",
   },
   {
     playerId: "1",
-    turnNumber: 4,
+    turnCount: 4,
     action: "skip",
   },
   {
     playerId: "2",
-    turnNumber: 4,
+    turnCount: 4,
     action: "skip",
   },
   {
     playerId: "1",
-    turnNumber: 5,
+    turnCount: 5,
     action: "skip",
   },
   {
     playerId: "2",
-    turnNumber: 5,
+    turnCount: 5,
     action: "skip",
   },
 ];
 
 export const sampleGameState = progressGame(
-  sampleActionList,
-  implicitInitialState
+  implicitInitialState,
+  sampleActionList
 );

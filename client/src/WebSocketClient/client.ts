@@ -1,62 +1,120 @@
 import type { GameState } from "../types";
 import type { ActionPayload } from "../types";
 
-// on client:
-// construct history of turns
-
-// turn - the collection of actions that players do at the same time??
-// t
-// 0          P         < queue()                   add player action to queue, dont run progressGame
-// 0          .
-// 0          .
-// 1 --e-e-e--p-------  < tick(loop applyAction())  move entities + do queued player actions
-// 1            ^?
-// 1            Pp      < applyAction()             do player action
-// 1
-// 1
-
-// ActionPayload { player + turnNumber + action }
-// Action { move }
-
-//
-//  TODO: distinguish optimistic client vs confirmed by server actions
-
-// 	- take snapshots all the way up to the last filled turn
-// 	- have turn buffer
-
-//  - on (websocket message)
-//    - if overrides optimistic: rollback
-//    - if fills in, save snapshot?
-
-// 	- on (action): <- play move
-// 		- if early : ActionsQueue += action
-// 		- if late  : progressGame(action)
-
-//  - on tick  : progressGame(ActionsQueue)
-import { useState } from "react";
-import { sampleGameState } from "../GameStateManager/game-logic";
+import { progressGame, sampleGameState } from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
+import { useReducer } from "react";
 
-type GlobalState = {
-  displayedState: GameState;
-  serverValidated: {
-    gameState: GameState;
-    actions: ActionPayload[];
+class ClientState {
+  playerId: string = "";
+  view: GameState = sampleGameState;
+  snapshot: GameState = sampleGameState;
+  validated: ActionPayload[] = [];
+  optimistic: ActionPayload[] = [];
+
+  onInput = (payload: ActionPayload) => {
+    this.optimistic.push(payload);
+    this.updateView();
   };
-  pendingActions: ActionPayload[];
+
+  onRecieve = (payload: ActionPayload) => {
+    // update snapshot
+    const snapshotTurnCount =
+      this.validated.at(-1)?.turnCount ?? payload.turnCount;
+    if (payload.turnCount > snapshotTurnCount) {
+      this.snapshot = progressGame(this.snapshot, this.validated);
+      this.validated = [];
+    }
+
+    // update validated
+    this.validated.push(payload);
+    if (payload.playerId === this.playerId) {
+      let old = this.optimistic.shift()!;
+      if (old.action === payload.action) {
+        return;
+      }
+    }
+    this.updateView();
+  };
+
+  onTick = () => {
+    // need to apply tick to progressGame even when no tick
+    progressGame(this.snapshot, []);
+  };
+
+  updateView = () => {
+    // does this handle? ignoring future moves? queuing moves?
+    this.view = progressGame(this.snapshot, [
+      ...this.validated,
+      ...this.optimistic,
+    ]);
+  };
+}
+
+interface ClientState {
+  playerId: string;
+  view: GameState;
+  snapshot: GameState;
+  validated: ActionPayload[];
+  optimistic: ActionPayload[];
+}
+
+type ClientAction =
+  | { type: "INPUT"; payload: ActionPayload }
+  | { type: "RECEIVE"; payload: ActionPayload }
+  | { type: "TICK" };
+
+const initialState: ClientState = {
+  playerId: "",
+  view: sampleGameState,
+  snapshot: sampleGameState,
+  validated: [],
+  optimistic: [],
 };
 
-const globalState: GlobalState = {
-  displayedState: {} as GameState, // TODO: replace with inital
-  serverValidated: {
-    gameState: {} as GameState, // snapshot of previous
-    actions: [], // actions between serverValidated gameState and current
-  },
-//   pendingActions: [], // actions we have not added to current game state (waiting for next tick)
-// optimisticAction
-};
+function clientReducer(state: ClientState, action: ClientAction): ClientState {
+  switch (action.type) {
+    case "INPUT": {
+      const optimistic = [...state.optimistic, action.payload];
+      return { ...state, optimistic };
+    }
 
-export function useGameEngine() {
+    case "RECEIVE": {
+      const s = structuredClone(state);
+
+      // update snapshot
+      const snapshotTurnCount =
+        s.validated.at(-1)?.turnCount ?? action.payload.turnCount;
+      if (action.payload.turnCount > snapshotTurnCount) {
+        s.snapshot = progressGame(s.snapshot, s.validated);
+        s.validated = [];
+      }
+
+      // update validated
+      s.validated.push(action.payload);
+      if (action.payload.playerId === s.playerId) {
+        const old = s.optimistic.shift()!;
+        if (old.action === action.payload.action) {
+          return s;
+        }
+      }
+
+      s.view = progressGame(s.snapshot, [...s.validated, ...s.optimistic]);
+      return s;
+    }
+
+    case "TICK": {
+      // Progress game even with no actions
+      progressGame(state.snapshot, []);
+      return state;
+    }
+
+    default:
+      return state;
+  }
+}
+
+export function useClient() {
   //   const [state, setState] = useState<GlobalState>({
   //     view: samepleGameState, // TODO: replace with inital
   //     serverValidated: {
@@ -65,37 +123,34 @@ export function useGameEngine() {
   //     },
   //     pendingActions: [], // actions we have not added to current game state (waiting for next tick)
   //   });
-  const onMessage = (data: string) => {
-    // validated payload that server sent { a player's action }
-    // could require rolling back
-    // could be queued for next tick
+  // on recieve (actionpayload) <- server validated
+  //    -
+  //
+  // validated payload that server sent { a player's action }
+  // could require rolling back
+  // could be queued for next tick
 
-    // data == "action:{pid}:{turnCount}:{action}"
-    const [type, playerId, turnNumber, action] = data.split(":");
-    globalState.serverValidated.actions.push({ playerId, turnNumber, action });
+  // data == "action:{pid}:{turnCount}:{action}"
+  const [type, playerId, turnNumber, action] = data.split(":");
+  globalState.serverValidated.actions.push({ playerId, turnNumber, action });
 
-	// make view (serverValidated.gameState, serverValidated.actions) => view
-	// - serverValidated.actions. filter out all the moves that will happen on the next tick
-	//
-	// on tick ()
-	// - serverValidated.actions. filter only the moves that should happen on this tick
-	//
+  // make view (serverValidated.gameState, serverValidated.actions) => view
+  // - serverValidated.actions. filter out all the moves that will happen on the next tick
+  //
+  // on tick ()
+  // - serverValidated.actions. filter only the moves that should happen on this tick
+  //
+  // on keydown (actionpayload):
+  // if early : ActionsQueue += action
+  // 	 if late  : progressGame(action)
 
-	if beforeNextTick {
-		// add it pendingActions
-	} else {
-		// rollback
-	}
-
-
-  };
+  // if beforeNextTick {
+  // 	// add it pendingActions
+  // } else {
+  // 	// rollback
+  // }
 
   const [connected] = useWebsocket(onMessage);
-
-  setInterval(function tick() {
-	// given servervalidated game state, filter servervalidated actions for before next tick
-    // process tick
-  }, 1000);
 
   // TODO: on connect to server, initialize default game state w/ player ids
 
@@ -110,37 +165,3 @@ export function useGameEngine() {
 
   return state;
 }
-
-declare function messageToPayload(msg: string): ActionPayload;
-
-// will find all moves from turnBuffer[currentMoveIndex] AND selfmove and apply to game
-const gameTick = (
-  game: Entities,
-  turns: TurnsSinceSnapshot,
-  selfTurn: ClientTurn
-): Entities => {
-  applyMove;
-};
-
-const processInput = (selfTurn: ClientTurn) => selfTurn;
-
-const recieveMove = (t: ActionPayload): Entities => {
-  addTurnToBuffer;
-  if (true) {
-    rollback;
-  }
-};
-
-const addTurnToBuffer = (
-  turns: TurnsSinceSnapshot,
-  turn: ActionPayload
-): TurnsSinceSnapshot => {};
-
-const rollback = (snpashot: Entities, turns: TurnsSinceSnapshot): Entities => {
-  applyMove;
-};
-
-declare function maybeSnapshot(
-  game: Entities,
-  turns: TurnsSinceSnapshot
-): Entities;

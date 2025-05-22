@@ -1,7 +1,7 @@
 // player actions
 export type ActionPayload = {
   playerId: ID;
-  turnNumber: number;
+  turnCount: number;
   action: Action;
 };
 

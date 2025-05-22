@@ -9,12 +9,12 @@ import (
 
 type Game struct {
 	m             *melody.Melody
-	beatIndex     int
+	turnCount     int
 	actedThisBeat map[PlayerId]bool
 }
 
 func (g Game) New() Game {
-	g.beatIndex = 0
+	g.turnCount = 0
 	g.actedThisBeat = make(map[PlayerId]bool)
 	return g
 }
@@ -30,7 +30,7 @@ func (g *Game) BroadcastMissing() {
 		pid := session.MustGet("pid").(PlayerId)
 		if !g.actedThisBeat[pid] {
 			PayloadAction{
-				beatIndex: g.beatIndex,
+				turnCount: g.turnCount,
 				action:    ActionSkip,
 			}.Broadcast(g.m, pid)
 		}
@@ -67,12 +67,12 @@ func main() {
 
 		switch turn := payload.(type) {
 		case PayloadAction:
-			if turn.beatIndex > game.beatIndex {
+			if turn.turnCount > game.turnCount {
 				game.BroadcastMissing()
 				game.actedThisBeat = make(map[PlayerId]bool)
-				game.beatIndex += 1
+				game.turnCount += 1
 			}
-			if turn.beatIndex == game.beatIndex {
+			if turn.turnCount == game.turnCount {
 				game.actedThisBeat[pid] = true
 				turn.Broadcast(m, pid)
 			}
