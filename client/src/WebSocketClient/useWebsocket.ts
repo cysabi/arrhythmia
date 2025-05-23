@@ -1,7 +1,7 @@
 import React from "react";
 
 const useWebsocket = (
-  onMessage: (data: string) => void
+  onMessage: (data: string) => void,
 ): [false, null] | [true, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 

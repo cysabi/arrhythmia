@@ -4,6 +4,7 @@ import type {
   Entity,
   Position,
   Direction,
+  Player,
 } from "../types";
 
 const defaultHealth = 5;
@@ -15,7 +16,7 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  map: GameState["map"]
+  map: GameState["map"],
 ): Position {
   let nextPosition: Position = [...currentPosition];
   switch (direction) {
@@ -42,7 +43,7 @@ function getNextPosition(
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState
+  currentState: GameState,
 ): GameState {
   const { turn, entities, map } = currentState;
 
@@ -147,102 +148,56 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  turnCount: number
+  turnCount: number,
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
-  if (actions.length === 0) return game;
+  if (actions.length === 0) {
+    // We're done!
+    // If caller is asking for a "future" turn, progress the tick
+    if (turnCount > game.turn) {
+      return tick(game);
+    } else {
+      return game;
+    }
+  }
+
   const [action, ...rest] = actions;
 
+  // Advance game state by 1 turn if action for next turn
   if (game.turn < action.turnCount) game = tick(game);
+
+  // If action is _ahead_ of specified turn, ignore it
+  if (action.turnCount > turnCount) return progressGame(game, rest, turnCount);
+
   const nextGameState = applyAction(action, game);
 
   return progressGame(nextGameState, rest, turnCount);
 }
 
-// TODO: this is just a hack -- need something that's consistent
-// across peers
-const implicitInitialState: GameState = {
+export function addPlayer(
+  game: GameState,
+  playerInfo: Pick<Player, "id" | "position">,
+): GameState {
+  return {
+    ...game,
+    entities: [
+      ...game.entities,
+      {
+        ...playerInfo,
+        facing: "right",
+        type: "player",
+        health: defaultHealth,
+      },
+    ],
+  };
+}
+
+export const initialState: GameState = {
   map: {
     height: 20,
     width: 20,
   },
-  entities: [
-    {
-      type: "player",
-      id: "1",
-      position: [2, 10],
-      facing: "right",
-      health: defaultHealth,
-    },
-    {
-      type: "player",
-      id: "2",
-      position: [18, 10],
-      facing: "left",
-      health: defaultHealth,
-    },
-  ],
+  entities: [],
   turn: 0,
 };
-
-// for dev only!
-
-const sampleActionList: ActionPayload[] = [
-  {
-    playerId: "1",
-    turnCount: 1,
-    action: "moveRight",
-  },
-  {
-    playerId: "2",
-    turnCount: 1,
-    action: "shoot",
-  },
-  {
-    playerId: "1",
-    turnCount: 2,
-    action: "moveUp",
-  },
-  {
-    playerId: "2",
-    turnCount: 2,
-    action: "moveDown",
-  },
-  {
-    playerId: "1",
-    turnCount: 3,
-    action: "skip",
-  },
-  {
-    playerId: "2",
-    turnCount: 3,
-    action: "skip",
-  },
-  {
-    playerId: "1",
-    turnCount: 4,
-    action: "skip",
-  },
-  {
-    playerId: "2",
-    turnCount: 4,
-    action: "skip",
-  },
-  {
-    playerId: "1",
-    turnCount: 5,
-    action: "skip",
-  },
-  {
-    playerId: "2",
-    turnCount: 5,
-    action: "skip",
-  },
-];
-
-export const sampleGameState: GameState = progressGame(
-  implicitInitialState,
-  sampleActionList,
-  3
-);

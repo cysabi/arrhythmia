@@ -1,12 +1,16 @@
-import { useMemo, useReducer } from "react";
+import { useCallback, useMemo, useReducer, useRef } from "react";
 import type { ActionPayload, Action, GameState } from "../types";
-import { progressGame, sampleGameState } from "../GameStateManager/game-logic";
+import {
+  progressGame,
+  initialState,
+  addPlayer,
+} from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
+import BeatManager from "../BeatManager";
 
 interface ClientState {
   playerId: string;
   turnCount: number;
-  view: GameState;
   snapshot: GameState;
   validated: ActionPayload[];
   optimistic: ActionPayload[];
@@ -16,23 +20,43 @@ export function useClient() {
   const [state, dispatch] = useReducer(reducer, {
     playerId: "",
     turnCount: 0,
-    view: sampleGameState,
-    snapshot: sampleGameState,
+    snapshot: initialState,
     validated: [],
     optimistic: [],
   } as ClientState);
+
+  const beatManager = useMemo(() => {
+    const bm = new BeatManager();
+    bm.onBeat = () => {
+      dispatch({
+        type: "TICK",
+      });
+    };
+    return bm;
+  }, []);
 
   const [connected, send] = useWebsocket((data) => {
     const payload = data.split(":");
     const type = payload.shift()!;
 
     switch (type) {
+      // TODO: game init multiplier: problems
+      //   - need to find out ids of other player(s)
+      //   - need to assign reasonable starting position to other players and self
+      // One idea:
+      //   have the server know about possible start positions
+      //   return a start position with the start payload
+      //   respond to start payload with a payload containing own entity
+      //     (id + position) for broadcast to other members
       case "start": {
         const playerId = payload.shift()!;
         dispatch({
           type: "RECIEVED_START",
           payload: { playerId },
         });
+
+        // TODO: pull a timestamp off of start event
+        beatManager.startAt(new Date(new Date().valueOf() + 10));
         break;
       }
 
@@ -53,35 +77,30 @@ export function useClient() {
     return progressGame(
       state.snapshot,
       [...state.validated, ...state.optimistic],
-      state.turnCount
+      state.turnCount,
     );
   }, [state]);
 
-  //
-  // on tick ()
-  // - serverValidated.actions. filter only the moves that should happen on this tick
-  //
-  // on keydown (actionpayload):
-  // if early : ActionsQueue += action
-  // 	 if late  : progressGame(action)
-
-  // if beforeNextTick {
-  // 	// add it pendingActions
-  // } else {
-  // 	// rollback
-  // }
+  const act = useCallback(
+    (action: Action) => {
+      const payload = {
+        action,
+        turnCount: state.turnCount,
+        playerId: state.playerId,
+      };
+      dispatch({ type: "INPUT", payload });
+      if (send) {
+        send(JSON.stringify(payload));
+      } else {
+        console.error("Websocket not yet connected");
+      }
+    },
+    [dispatch, send, state.playerId, state.turnCount],
+  );
 
   // TODO: on connect to server, initialize default game state w/ player ids
 
-  // TODO: bind to incoming messages from webocket, writing actions
-  // onto game state
-  // IF we get a message that's for the prior "turn" we already
-  // "ticked", go back to server validated and rerun all actions since
-
-  // TODO: expose function to game component to be able to send moves
-  // TODO: synchronized music playback
-
-  return view;
+  return { view, act };
 }
 
 type ClientEvent =
@@ -93,7 +112,11 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
   switch (event.type) {
     case "RECIEVED_START": {
       const playerId = event.payload.playerId;
-      return { ...state, playerId };
+      return {
+        ...state,
+        playerId,
+        snapshot: addPlayer(state.snapshot, { id: playerId, position: [2, 2] }),
+      };
     }
 
     case "RECIEVED_ACTION": {
@@ -124,7 +147,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount
+      snapshotTurnCount,
     );
     state.validated = [];
   }
