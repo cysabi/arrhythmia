@@ -3,6 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
+	"strings"
+
+	"slices"
 
 	"github.com/olahol/melody"
 )
@@ -18,7 +21,6 @@ func (g Game) New() Game {
 	return g
 }
 
-// next beat happened! server moves game forward one tick and fills in missing payloads
 func (g *Game) BroadcastMissing(m *melody.Melody) {
 	sessions, err := m.Sessions()
 	if err != nil {
@@ -38,6 +40,28 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 	}
 }
 
+func BroadcastConnect(m *melody.Melody) {
+	sessions, err := m.Sessions()
+	if err != nil {
+		panic(err)
+	}
+
+	pids := make([]string, len(sessions))
+	for i, s := range sessions {
+		pids[i] = string(s.MustGet("pid").(PlayerId))
+	}
+
+	for i, s := range sessions {
+		others := strings.Join(slices.Delete(pids, i, i+1), ",")
+
+		payload := PayloadYou{}.New(
+			PlayerId(pids[i]),
+			[]string{others})
+
+		m.BroadcastMultiple([]byte(payload.String()), []*melody.Session{s})
+	}
+}
+
 func main() {
 	m := melody.New()
 	game := Game{}.New()
@@ -50,24 +74,23 @@ func main() {
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)
 
-		payload := makePayload(pid, "start")
-		m.Broadcast([]byte(payload.String()))
+		BroadcastConnect(m)
 	})
 
-	//
-	//  p1: M   M   M   M   M
-	//  p2: M   M   s   s
-	//
-	// player makes move (send message)
-	// server receives message -> m.HandleMessage
-	// 	if player turn is ahead of game turn, call BroadcastMissing() which has all other players broadcast a skip move
-	// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
-	//  broadcast move to other players so they're at most 1 turn behind
-
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
-		pid := s.MustGet("pid").(PlayerId)
+		//
+		//  p1: M   M   M   M   M
+		//  p2: M   M   s   s
+		//
+		// player makes move (send message)
+		// server receives message -> m.HandleMessage
+		// 	if player turn is ahead of game turn, call BroadcastMissing() which has all other players broadcast a skip move
+		// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
+		//  broadcast move to other players so they're at most 1 turn behind
 
-		switch payload := makePayload(pid, string(msg)).(type) {
+		pid := s.MustGet("pid").(PlayerId)
+		switch payload := recievePayload(pid, string(msg)).(type) {
+
 		case PayloadAction:
 			if payload.turnCount > game.turnCount {
 				game.BroadcastMissing(m)
@@ -78,6 +101,10 @@ func main() {
 				game.actedThisBeat[pid] = true
 				m.Broadcast([]byte(payload.String()))
 			}
+
+		case PayloadStart:
+			m.Broadcast([]byte(payload.String()))
+
 		}
 	})
 

@@ -3,6 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Payload interface {
@@ -10,7 +11,7 @@ type Payload interface {
 	String() string
 }
 
-func makePayload(pid PlayerId, msg string) Payload {
+func recievePayload(pid PlayerId, msg string) Payload {
 	attr := strings.Split(msg, ":")
 
 	msgType := attr[0]
@@ -26,21 +27,50 @@ func makePayload(pid PlayerId, msg string) Payload {
 	}
 }
 
+// PayloadYou
+type PayloadYou struct {
+	pid    PlayerId
+	others []string
+}
+
+func (PayloadYou) New(pid PlayerId, attr []string) Payload {
+	others := strings.Split(attr[0], ",")
+
+	return PayloadYou{
+		pid:    pid,
+		others: others,
+	}
+}
+
+func (p PayloadYou) String() string {
+	return strings.Join([]string{
+		"you",
+		string(p.pid),
+		strings.Join(p.others, ","),
+	}, ":")
+}
+
 // PayloadStart
 type PayloadStart struct {
-	pid PlayerId
+	pid  PlayerId
+	when string
 }
 
 func (PayloadStart) New(pid PlayerId, attr []string) Payload {
+	now := time.Now()
+	futureTime := now.Add(2 * time.Second)
+	when := futureTime.Format("2006-01-02T15:04:05.999999Z07:00")
+
 	return PayloadStart{
-		pid: pid,
+		pid:  pid,
+		when: when,
 	}
 }
 
 func (p PayloadStart) String() string {
 	return strings.Join([]string{
 		"start",
-		string(p.pid),
+		p.when,
 	}, ":")
 }
 
