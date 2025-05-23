@@ -3,40 +3,52 @@ package main
 import (
 	"strconv"
 	"strings"
-
-	"github.com/olahol/melody"
 )
 
-// pid:
 type Payload interface {
-	New([]string) Payload
+	New(PlayerId, []string) Payload
+	String() string
 }
 
-func newPayload(raw string) Payload {
+func makePayload(pid PlayerId, raw string) Payload {
 	attr := strings.Split(raw, ":")
 
 	switch attr[0] {
 	case "start":
-		return PayloadStart{}.New(attr[1:])
+		return PayloadStart{}.New(pid, attr[1:])
 	case "action":
-		return PayloadAction{}.New(attr[1:])
+		return PayloadAction{}.New(pid, attr[1:])
 	default:
 		panic("unknown payload type")
 	}
 }
 
-type PayloadStart struct{}
-
-func (PayloadStart) New(attr []string) Payload {
-	return PayloadStart{}
+// PayloadStart
+type PayloadStart struct {
+	pid PlayerId
 }
 
+func (PayloadStart) New(pid PlayerId, attr []string) Payload {
+	return PayloadStart{
+		pid: pid,
+	}
+}
+
+func (p PayloadStart) String() string {
+	return strings.Join([]string{
+		"start",
+		string(p.pid),
+	}, ":")
+}
+
+// PayloadAction
 type PayloadAction struct {
+	pid       PlayerId
 	turnCount int
 	action    Action
 }
 
-func (PayloadAction) New(attr []string) Payload {
+func (PayloadAction) New(pid PlayerId, attr []string) Payload {
 	index, err := strconv.Atoi(attr[0])
 	if err != nil {
 		panic(err)
@@ -47,21 +59,19 @@ func (PayloadAction) New(attr []string) Payload {
 	}
 
 	return PayloadAction{
+		pid:       pid,
 		turnCount: index,
 		action:    Action(action),
 	}
 }
 
-// action:{pid}:{turnCount}:{action}
-func (p PayloadAction) Broadcast(m *melody.Melody, pid PlayerId) {
-	payload := strings.Join([]string{
+func (p PayloadAction) String() string {
+	return strings.Join([]string{
 		"action",
-		string(pid),
+		string(p.pid),
 		strconv.Itoa(p.turnCount),
 		strconv.Itoa(int(p.action)),
 	}, ":")
-
-	m.Broadcast([]byte(payload))
 }
 
 type Action int

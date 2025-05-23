@@ -8,7 +8,6 @@ import (
 )
 
 type Game struct {
-	m             *melody.Melody
 	turnCount     int
 	actedThisBeat map[PlayerId]bool
 }
@@ -20,8 +19,8 @@ func (g Game) New() Game {
 }
 
 // next beat happened! server moves game forward one tick and fills in missing payloads
-func (g *Game) BroadcastMissing() {
-	sessions, err := g.m.Sessions()
+func (g *Game) BroadcastMissing(m *melody.Melody) {
+	sessions, err := m.Sessions()
 	if err != nil {
 		panic(err)
 	}
@@ -29,17 +28,19 @@ func (g *Game) BroadcastMissing() {
 	for _, session := range sessions {
 		pid := session.MustGet("pid").(PlayerId)
 		if !g.actedThisBeat[pid] {
-			PayloadAction{
+			skipPayload := PayloadAction{
+				pid:       pid,
 				turnCount: g.turnCount,
 				action:    ActionSkip,
-			}.Broadcast(g.m, pid)
+			}.String()
+			m.Broadcast([]byte(skipPayload))
 		}
 	}
 }
 
 func main() {
 	m := melody.New()
-	game := Game{m: m}.New()
+	game := Game{}.New()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
 		m.HandleRequest(w, r)
@@ -48,12 +49,14 @@ func main() {
 	m.HandleConnect(func(s *melody.Session) {
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)
-		m.Broadcast([]byte(pid))
+
+		payload := makePayload(pid, "start")
+		m.Broadcast([]byte(payload.String()))
 	})
 
 	//
 	//  p1: M   M   M   M   M
-	//  p2: M   M   s   s	M
+	//  p2: M   M   s   s
 	//
 	// player makes move (send message)
 	// server receives message -> m.HandleMessage
@@ -63,18 +66,17 @@ func main() {
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		pid := s.MustGet("pid").(PlayerId)
-		payload := newPayload(string(msg))
 
-		switch turn := payload.(type) {
+		switch payload := makePayload(pid, string(msg)).(type) {
 		case PayloadAction:
-			if turn.turnCount > game.turnCount {
-				game.BroadcastMissing()
+			if payload.turnCount > game.turnCount {
+				game.BroadcastMissing(m)
 				game.actedThisBeat = make(map[PlayerId]bool)
 				game.turnCount += 1
 			}
-			if turn.turnCount == game.turnCount {
+			if payload.turnCount == game.turnCount {
 				game.actedThisBeat[pid] = true
-				turn.Broadcast(m, pid)
+				m.Broadcast([]byte(payload.String()))
 			}
 		}
 	})
