@@ -4,7 +4,6 @@ import type {
   Entity,
   Position,
   Direction,
-  Player,
 } from "../types";
 
 const defaultHealth = 5;
@@ -175,21 +174,31 @@ export function progressGame(
   return progressGame(nextGameState, rest, turnCount);
 }
 
-export function addPlayer(
+const defaultPositions = [
+  [[2, 2], "right"],
+  [[18, 18], "left"],
+  [[2, 18], "right"],
+  [[18, 2], "left"],
+];
+
+export function setPlayers(
   game: GameState,
-  playerInfo: Pick<Player, "id" | "position">,
+  payload: { playerId: string; peerIds: string[] },
 ): GameState {
+  const { playerId, peerIds } = payload;
+  const orderedIds = [playerId, ...peerIds].sort();
   return {
     ...game,
-    entities: [
-      ...game.entities,
-      {
-        ...playerInfo,
-        facing: "right",
+    entities: orderedIds.map((id) => {
+      const [position, facing] = defaultPositions[orderedIds.indexOf(id)];
+      return {
+        id,
+        position: position as Position,
+        facing: facing as Direction,
         type: "player",
         health: defaultHealth,
-      },
-    ],
+      };
+    }),
   };
 }
 
