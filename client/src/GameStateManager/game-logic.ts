@@ -68,8 +68,8 @@ export function applyAction(
             facing: entity.facing,
           });
           break;
-        case "moveDown":
         case "moveUp":
+        case "moveDown":
         case "moveLeft":
         case "moveRight":
           // "moveDown" -> "down"
@@ -146,7 +146,8 @@ function tick(game: GameState): GameState {
 
 export function progressGame(
   game: GameState,
-  actions: ActionPayload[]
+  actions: ActionPayload[],
+  turnCount: number
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
@@ -156,7 +157,7 @@ export function progressGame(
   if (game.turn < action.turnCount) game = tick(game);
   const nextGameState = applyAction(action, game);
 
-  return progressGame(nextGameState, rest);
+  return progressGame(nextGameState, rest, turnCount);
 }
 
 // TODO: this is just a hack -- need something that's consistent
@@ -242,5 +243,6 @@ const sampleActionList: ActionPayload[] = [
 
 export const sampleGameState: GameState = progressGame(
   implicitInitialState,
-  sampleActionList
+  sampleActionList,
+  3
 );

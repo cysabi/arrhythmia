@@ -1,164 +1,61 @@
-import type { Action, GameState } from "../types";
-import type { ActionPayload } from "../types";
-
+import { useMemo, useReducer } from "react";
+import type { ActionPayload, Action, GameState } from "../types";
 import { progressGame, sampleGameState } from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
-import { useMemo, useReducer } from "react";
-
-class Temp {
-  playerId: string = "";
-  view: GameState = sampleGameState;
-  snapshot: GameState = sampleGameState;
-  validated: ActionPayload[] = [];
-  optimistic: ActionPayload[] = [];
-
-  onInput = (payload: ActionPayload) => {
-    this.optimistic.push(payload);
-    this.updateView();
-  };
-
-  onRecieve = (payload: ActionPayload) => {
-    // update snapshot
-    const snapshotTurnCount =
-      this.validated.at(-1)?.turnCount ?? payload.turnCount;
-    if (payload.turnCount > snapshotTurnCount) {
-      this.snapshot = progressGame(this.snapshot, this.validated);
-      this.validated = [];
-    }
-
-    // update validated
-    this.validated.push(payload);
-    if (payload.playerId === this.playerId) {
-      let old = this.optimistic.shift()!;
-      if (old.action === payload.action) {
-        return;
-      }
-    }
-    this.updateView();
-  };
-
-  onTick = () => {
-    // need to apply tick to progressGame even when no tick
-    progressGame(this.snapshot, []);
-  };
-
-  updateView = () => {
-    // does this handle? ignoring future moves? queuing moves?
-  };
-}
-
-const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
-  const snapshotTurnCount =
-    state.validated.at(-1)?.turnCount ?? payload.turnCount;
-  if (payload.turnCount > snapshotTurnCount) {
-    state.snapshot = progressGame(state.snapshot, state.validated);
-    state.validated = [];
-  }
-
-  return state;
-};
-
-const updateValidated = (state: ClientState, payload: ActionPayload) => {
-  state.validated.push(payload);
-  if (payload.playerId === state.playerId) {
-    state.optimistic.shift()!; // const old = state.optimistic.shift()!;
-    // if (old.action === payload.action) {
-    //   return state; // can we use this somehow?
-    // }
-  }
-
-  return state;
-};
 
 interface ClientState {
   playerId: string;
+  turnCount: number;
   view: GameState;
   snapshot: GameState;
   validated: ActionPayload[];
   optimistic: ActionPayload[];
 }
 
-type ClientEvent =
-  | { type: "START"; playerId: string }
-  | { type: "ACTION"; payload: ActionPayload }
-  | { type: "INPUT"; payload: ActionPayload }
-  | { type: "TICK" };
-
-function clientReducer(state: ClientState, event: ClientEvent): ClientState {
-  switch (event.type) {
-    case "START": {
-      return { ...state, playerId: event.playerId };
-    }
-    case "ACTION": {
-      let s = structuredClone(state);
-
-      s = updateSnapshot(s, event.payload);
-      s = updateValidated(s, event.payload);
-
-      return s;
-    }
-
-    case "INPUT": {
-      const optimistic = [...state.optimistic, event.payload];
-      return { ...state, optimistic };
-    }
-
-    case "TICK": {
-      // how do i pass along the tick?
-      // progressGame(state.snapshot);
-      return state;
-    }
-  }
-}
-
-const initialState: ClientState = {
-  playerId: "",
-  view: sampleGameState,
-  snapshot: sampleGameState,
-  validated: [],
-  optimistic: [],
-};
 export function useClient() {
-  const [state, dispatch] = useReducer(clientReducer, initialState);
+  const [state, dispatch] = useReducer(reducer, {
+    playerId: "",
+    turnCount: 0,
+    view: sampleGameState,
+    snapshot: sampleGameState,
+    validated: [],
+    optimistic: [],
+  } as ClientState);
 
-  // make view (serverValidated.gameState, serverValidated.actions) => view
-  // - serverValidated.actions. filter out all the moves that will happen on the next tick
-  const view = useMemo(() => {
-    // does this handle ignoring future moves? queuing moves?
-    return {
-      ...state,
-      view: progressGame(state.snapshot, [
-        ...state.validated,
-        ...state.optimistic,
-      ]),
-    };
-  }, [state]);
-
-  const [connected] = useWebsocket((data) => {
-    const [type, playerId, turnCount, action] = data.split(":");
+  const [connected, send] = useWebsocket((data) => {
+    const payload = data.split(":");
+    const type = payload.shift()!;
 
     switch (type) {
       case "start": {
+        const playerId = payload.shift()!;
         dispatch({
-          type: "START",
-          playerId,
+          type: "RECIEVED_START",
+          payload: { playerId },
         });
         break;
       }
 
       case "action": {
+        const playerId = payload.shift()!;
+        const turnCount = parseInt(payload.shift()!);
+        const action = payload.shift()! as Action;
         dispatch({
-          type: "ACTION",
-          payload: {
-            playerId,
-            turnCount: parseInt(turnCount),
-            action: action as Action,
-          },
+          type: "RECIEVED_ACTION",
+          payload: { playerId, turnCount, action },
         });
         break;
       }
     }
   });
+
+  const view = useMemo(() => {
+    return progressGame(
+      state.snapshot,
+      [...state.validated, ...state.optimistic],
+      state.turnCount
+    );
+  }, [state]);
 
   //
   // on tick ()
@@ -182,8 +79,67 @@ export function useClient() {
   // "ticked", go back to server validated and rerun all actions since
 
   // TODO: expose function to game component to be able to send moves
-
   // TODO: synchronized music playback
 
   return view;
 }
+
+type ClientEvent =
+  | { type: "RECIEVED_START"; payload: { playerId: string } }
+  | { type: "RECIEVED_ACTION"; payload: ActionPayload }
+  | { type: "INPUT"; payload: ActionPayload }
+  | { type: "TICK" };
+const reducer = (state: ClientState, event: ClientEvent): ClientState => {
+  switch (event.type) {
+    case "RECIEVED_START": {
+      const playerId = event.payload.playerId;
+      return { ...state, playerId };
+    }
+
+    case "RECIEVED_ACTION": {
+      let s = structuredClone(state);
+
+      s = updateSnapshot(s, event.payload);
+      s = updateValidated(s, event.payload);
+
+      return s;
+    }
+
+    case "INPUT": {
+      const optimistic = [...state.optimistic, event.payload];
+      return { ...state, optimistic };
+    }
+
+    case "TICK": {
+      const turnCount = state.turnCount + 1;
+      return { ...state, turnCount };
+    }
+  }
+};
+
+const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
+  const snapshotTurnCount =
+    state.validated.at(-1)?.turnCount ?? payload.turnCount;
+  if (payload.turnCount > snapshotTurnCount) {
+    state.snapshot = progressGame(
+      state.snapshot,
+      state.validated,
+      snapshotTurnCount
+    );
+    state.validated = [];
+  }
+
+  return state;
+};
+
+const updateValidated = (state: ClientState, payload: ActionPayload) => {
+  state.validated.push(payload);
+  if (payload.playerId === state.playerId) {
+    state.optimistic.shift()!; // const old = state.optimistic.shift()!;
+    // if (old.action === payload.action) {
+    //   return state; // can we use this somehow?
+    // }
+  }
+
+  return state;
+};

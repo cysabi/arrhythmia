@@ -10,14 +10,17 @@ type Payload interface {
 	String() string
 }
 
-func makePayload(pid PlayerId, raw string) Payload {
-	attr := strings.Split(raw, ":")
+func makePayload(pid PlayerId, msg string) Payload {
+	attr := strings.Split(msg, ":")
 
-	switch attr[0] {
+	msgType := attr[0]
+	msgPayload := attr[1:]
+
+	switch msgType {
 	case "start":
-		return PayloadStart{}.New(pid, attr[1:])
+		return PayloadStart{}.New(pid, msgPayload)
 	case "action":
-		return PayloadAction{}.New(pid, attr[1:])
+		return PayloadAction{}.New(pid, msgPayload)
 	default:
 		panic("unknown payload type")
 	}
@@ -45,23 +48,20 @@ func (p PayloadStart) String() string {
 type PayloadAction struct {
 	pid       PlayerId
 	turnCount int
-	action    Action
+	action    string
 }
 
 func (PayloadAction) New(pid PlayerId, attr []string) Payload {
-	index, err := strconv.Atoi(attr[0])
+	turnCount, err := strconv.Atoi(attr[0])
 	if err != nil {
 		panic(err)
 	}
-	action, err := strconv.Atoi(attr[1])
-	if err != nil {
-		panic(err)
-	}
+	action := attr[1]
 
 	return PayloadAction{
 		pid:       pid,
-		turnCount: index,
-		action:    Action(action),
+		turnCount: turnCount,
+		action:    action,
 	}
 }
 
@@ -70,17 +70,6 @@ func (p PayloadAction) String() string {
 		"action",
 		string(p.pid),
 		strconv.Itoa(p.turnCount),
-		strconv.Itoa(int(p.action)),
+		p.action,
 	}, ":")
 }
-
-type Action int
-
-const (
-	ActionSkip Action = iota
-	ActionMoveUp
-	ActionMoveDown
-	ActionMoveLeft
-	ActionMoveRight
-	ActionShoot
-)
