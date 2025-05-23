@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"slices"
-
 	"github.com/olahol/melody"
 )
 
@@ -40,26 +38,21 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 	}
 }
 
-func BroadcastConnect(m *melody.Melody) {
+func GetOthers(m *melody.Melody, you PlayerId) string {
 	sessions, err := m.Sessions()
 	if err != nil {
 		panic(err)
 	}
 
-	pids := make([]string, len(sessions))
-	for i, s := range sessions {
-		pids[i] = string(s.MustGet("pid").(PlayerId))
+	pids := []string{}
+	for _, s := range sessions {
+		pid := s.MustGet("pid").(PlayerId)
+		if pid == you {
+			continue
+		}
+		pids = append(pids, string(you))
 	}
-
-	for i, s := range sessions {
-		others := strings.Join(slices.Delete(pids, i, i+1), ",")
-
-		payload := PayloadYou{}.New(
-			PlayerId(pids[i]),
-			[]string{others})
-
-		m.BroadcastMultiple([]byte(payload.String()), []*melody.Session{s})
-	}
+	return strings.Join(pids, ",")
 }
 
 func main() {
@@ -74,7 +67,12 @@ func main() {
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)
 
-		BroadcastConnect(m)
+		others := GetOthers(m, pid)
+		payloadYou := PayloadYou{}.New(pid, []string{others})
+		payloadThem := PayloadThem{}.New(pid, []string{})
+
+		s.Write([]byte(payloadYou.String()))
+		m.BroadcastOthers([]byte(payloadThem.String()), s)
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {

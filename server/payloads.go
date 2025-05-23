@@ -50,6 +50,24 @@ func (p PayloadYou) String() string {
 	}, ":")
 }
 
+// PayloadThem
+type PayloadThem struct {
+	pid PlayerId
+}
+
+func (PayloadThem) New(pid PlayerId, attr []string) Payload {
+	return PayloadThem{
+		pid: pid,
+	}
+}
+
+func (p PayloadThem) String() string {
+	return strings.Join([]string{
+		"them",
+		string(p.pid),
+	}, ":")
+}
+
 // PayloadStart
 type PayloadStart struct {
 	pid  PlayerId
