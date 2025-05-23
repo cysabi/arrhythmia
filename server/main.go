@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -64,6 +65,7 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
+		fmt.Println("Got a connection")
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)
 

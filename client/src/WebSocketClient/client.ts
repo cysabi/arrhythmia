@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useReducer, useRef } from "react";
+import { useCallback, useEffect, useMemo, useReducer } from "react";
 import type { ActionPayload, Action, GameState } from "../types";
 import {
   progressGame,
   initialState,
-  addPlayer,
+  setPlayers,
 } from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
 import BeatManager from "../BeatManager";
@@ -14,6 +14,7 @@ interface ClientState {
   snapshot: GameState;
   validated: ActionPayload[];
   optimistic: ActionPayload[];
+  startAt: Date | null;
 }
 
 export function useClient() {
@@ -23,6 +24,7 @@ export function useClient() {
     snapshot: initialState,
     validated: [],
     optimistic: [],
+    startAt: null,
   } as ClientState);
 
   const beatManager = useMemo(() => {
@@ -35,28 +37,31 @@ export function useClient() {
     return bm;
   }, []);
 
+  useEffect(() => {
+    beatManager.startAt(new Date(new Date().valueOf() + 10));
+  }, [state.startAt]);
+
   const [connected, send] = useWebsocket((data) => {
+    console.log(data);
     const payload = data.split(":");
     const type = payload.shift()!;
 
     switch (type) {
-      // TODO: game init multiplier: problems
-      //   - need to find out ids of other player(s)
-      //   - need to assign reasonable starting position to other players and self
-      // One idea:
-      //   have the server know about possible start positions
-      //   return a start position with the start payload
-      //   respond to start payload with a payload containing own entity
-      //     (id + position) for broadcast to other members
-      case "start": {
+      case "you": {
         const playerId = payload.shift()!;
-        dispatch({
-          type: "RECIEVED_START",
-          payload: { playerId },
-        });
+        const peerIds = payload.shift()!.split(",");
 
-        // TODO: pull a timestamp off of start event
-        beatManager.startAt(new Date(new Date().valueOf() + 10));
+        dispatch({
+          type: "RECEIVED_PLAYERS",
+          payload: { playerId, peerIds },
+        });
+        break;
+      }
+      case "start": {
+        // TODO: try to use performance instead for precision/clock sync
+        const at = new Date(payload.shift()!);
+        dispatch({ type: "RECEIVED_START", payload: { at } });
+
         break;
       }
 
@@ -104,20 +109,31 @@ export function useClient() {
 }
 
 type ClientEvent =
-  | { type: "RECIEVED_START"; payload: { playerId: string } }
   | { type: "RECIEVED_ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
-  | { type: "TICK" };
+  | { type: "TICK" }
+  | { type: "RECEIVED_START"; payload: { at: Date } }
+  | {
+      type: "RECEIVED_PLAYERS";
+      payload: { playerId: string; peerIds: string[] };
+    };
 const reducer = (state: ClientState, event: ClientEvent): ClientState => {
   switch (event.type) {
-    case "RECIEVED_START": {
-      const playerId = event.payload.playerId;
+    case "RECEIVED_PLAYERS": {
+      const { playerId } = event.payload;
       return {
         ...state,
         playerId,
-        snapshot: addPlayer(state.snapshot, { id: playerId, position: [2, 2] }),
+        snapshot: setPlayers(state.snapshot, event.payload),
       };
     }
+
+    case "RECEIVED_START":
+      const { at } = event.payload;
+      return {
+        ...state,
+        startAt: at,
+      };
 
     case "RECIEVED_ACTION": {
       let s = structuredClone(state);
