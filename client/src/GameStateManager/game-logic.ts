@@ -240,7 +240,7 @@ const sampleActionList: ActionPayload[] = [
   },
 ];
 
-export const sampleGameState = progressGame(
+export const sampleGameState: GameState = progressGame(
   implicitInitialState,
   sampleActionList
 );

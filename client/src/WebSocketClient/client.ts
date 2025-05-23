@@ -1,11 +1,11 @@
-import type { GameState } from "../types";
+import type { Action, GameState } from "../types";
 import type { ActionPayload } from "../types";
 
 import { progressGame, sampleGameState } from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
-import { useReducer } from "react";
+import { useMemo, useReducer } from "react";
 
-class ClientState {
+class Temp {
   playerId: string = "";
   view: GameState = sampleGameState;
   snapshot: GameState = sampleGameState;
@@ -44,12 +44,31 @@ class ClientState {
 
   updateView = () => {
     // does this handle? ignoring future moves? queuing moves?
-    this.view = progressGame(this.snapshot, [
-      ...this.validated,
-      ...this.optimistic,
-    ]);
   };
 }
+
+const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
+  const snapshotTurnCount =
+    state.validated.at(-1)?.turnCount ?? payload.turnCount;
+  if (payload.turnCount > snapshotTurnCount) {
+    state.snapshot = progressGame(state.snapshot, state.validated);
+    state.validated = [];
+  }
+
+  return state;
+};
+
+const updateValidated = (state: ClientState, payload: ActionPayload) => {
+  state.validated.push(payload);
+  if (payload.playerId === state.playerId) {
+    state.optimistic.shift()!; // const old = state.optimistic.shift()!;
+    // if (old.action === payload.action) {
+    //   return state; // can we use this somehow?
+    // }
+  }
+
+  return state;
+};
 
 interface ClientState {
   playerId: string;
@@ -59,10 +78,38 @@ interface ClientState {
   optimistic: ActionPayload[];
 }
 
-type ClientAction =
+type ClientEvent =
+  | { type: "START"; playerId: string }
+  | { type: "ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
-  | { type: "RECEIVE"; payload: ActionPayload }
   | { type: "TICK" };
+
+function clientReducer(state: ClientState, event: ClientEvent): ClientState {
+  switch (event.type) {
+    case "START": {
+      return { ...state, playerId: event.playerId };
+    }
+    case "ACTION": {
+      let s = structuredClone(state);
+
+      s = updateSnapshot(s, event.payload);
+      s = updateValidated(s, event.payload);
+
+      return s;
+    }
+
+    case "INPUT": {
+      const optimistic = [...state.optimistic, event.payload];
+      return { ...state, optimistic };
+    }
+
+    case "TICK": {
+      // how do i pass along the tick?
+      // progressGame(state.snapshot);
+      return state;
+    }
+  }
+}
 
 const initialState: ClientState = {
   playerId: "",
@@ -71,71 +118,48 @@ const initialState: ClientState = {
   validated: [],
   optimistic: [],
 };
-
-function clientReducer(state: ClientState, action: ClientAction): ClientState {
-  switch (action.type) {
-    case "INPUT": {
-      const optimistic = [...state.optimistic, action.payload];
-      return { ...state, optimistic };
-    }
-
-    case "RECEIVE": {
-      const s = structuredClone(state);
-
-      // update snapshot
-      const snapshotTurnCount =
-        s.validated.at(-1)?.turnCount ?? action.payload.turnCount;
-      if (action.payload.turnCount > snapshotTurnCount) {
-        s.snapshot = progressGame(s.snapshot, s.validated);
-        s.validated = [];
-      }
-
-      // update validated
-      s.validated.push(action.payload);
-      if (action.payload.playerId === s.playerId) {
-        const old = s.optimistic.shift()!;
-        if (old.action === action.payload.action) {
-          return s;
-        }
-      }
-
-      s.view = progressGame(s.snapshot, [...s.validated, ...s.optimistic]);
-      return s;
-    }
-
-    case "TICK": {
-      // Progress game even with no actions
-      progressGame(state.snapshot, []);
-      return state;
-    }
-
-    default:
-      return state;
-  }
-}
-
 export function useClient() {
-  //   const [state, setState] = useState<GlobalState>({
-  //     view: samepleGameState, // TODO: replace with inital
-  //     serverValidated: {
-  //       gameState: {}, // snapshot of previous
-  //       actions: [], // actions between serverValidated gameState and current
-  //     },
-  //     pendingActions: [], // actions we have not added to current game state (waiting for next tick)
-  //   });
-  // on recieve (actionpayload) <- server validated
-  //    -
-  //
-  // validated payload that server sent { a player's action }
-  // could require rolling back
-  // could be queued for next tick
-
-  // data == "action:{pid}:{turnCount}:{action}"
-  const [type, playerId, turnNumber, action] = data.split(":");
-  globalState.serverValidated.actions.push({ playerId, turnNumber, action });
+  const [state, dispatch] = useReducer(clientReducer, initialState);
 
   // make view (serverValidated.gameState, serverValidated.actions) => view
   // - serverValidated.actions. filter out all the moves that will happen on the next tick
+  const view = useMemo(() => {
+    // does this handle ignoring future moves? queuing moves?
+    return {
+      ...state,
+      view: progressGame(state.snapshot, [
+        ...state.validated,
+        ...state.optimistic,
+      ]),
+    };
+  }, [state]);
+
+  const [connected] = useWebsocket((data) => {
+    const [type, playerId, turnCount, action] = data.split(":");
+
+    switch (type) {
+      case "start": {
+        dispatch({
+          type: "START",
+          playerId,
+        });
+        break;
+      }
+
+      case "action": {
+        dispatch({
+          type: "ACTION",
+          payload: {
+            playerId,
+            turnCount: parseInt(turnCount),
+            action: action as Action,
+          },
+        });
+        break;
+      }
+    }
+  });
+
   //
   // on tick ()
   // - serverValidated.actions. filter only the moves that should happen on this tick
@@ -150,8 +174,6 @@ export function useClient() {
   // 	// rollback
   // }
 
-  const [connected] = useWebsocket(onMessage);
-
   // TODO: on connect to server, initialize default game state w/ player ids
 
   // TODO: bind to incoming messages from webocket, writing actions
@@ -163,5 +185,5 @@ export function useClient() {
 
   // TODO: synchronized music playback
 
-  return state;
+  return view;
 }
