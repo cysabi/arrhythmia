@@ -48,10 +48,9 @@ func GetOthers(m *melody.Melody, you PlayerId) string {
 	pids := []string{}
 	for _, s := range sessions {
 		pid := s.MustGet("pid").(PlayerId)
-		if pid == you {
-			continue
+		if pid != you {
+			pids = append(pids, string(pid))
 		}
-		pids = append(pids, string(you))
 	}
 	return strings.Join(pids, ",")
 }
