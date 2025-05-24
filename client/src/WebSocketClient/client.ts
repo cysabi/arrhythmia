@@ -3,7 +3,7 @@ import type { ActionPayload, Action, GameState } from "../types";
 import {
   progressGame,
   initialState,
-  setPlayers,
+  ensurePlayers,
 } from "../GameStateManager/game-logic";
 import useWebsocket from "./useWebsocket";
 import BeatManager from "../BeatManager";
@@ -49,11 +49,22 @@ export function useClient() {
     switch (type) {
       case "you": {
         const playerId = payload.shift()!;
-        const peerIds = payload.shift()!.split(",");
+        const peerIds = payload
+          .shift()!
+          .split(",")
+          .filter((pid) => pid.length > 0);
 
         dispatch({
-          type: "RECEIVED_PLAYERS",
+          type: "RECEIVED_YOU",
           payload: { playerId, peerIds },
+        });
+        break;
+      }
+      case "them": {
+        const peerId = payload.shift()!;
+        dispatch({
+          type: "RECEIVED_THEM",
+          payload: { peerId },
         });
         break;
       }
@@ -114,17 +125,31 @@ type ClientEvent =
   | { type: "TICK" }
   | { type: "RECEIVED_START"; payload: { at: Date } }
   | {
-      type: "RECEIVED_PLAYERS";
+      type: "RECEIVED_YOU";
       payload: { playerId: string; peerIds: string[] };
+    }
+  | {
+      type: "RECEIVED_THEM";
+      payload: { peerId: string };
     };
 const reducer = (state: ClientState, event: ClientEvent): ClientState => {
   switch (event.type) {
-    case "RECEIVED_PLAYERS": {
-      const { playerId } = event.payload;
+    case "RECEIVED_YOU": {
+      const { playerId, peerIds } = event.payload;
       return {
         ...state,
         playerId,
-        snapshot: setPlayers(state.snapshot, event.payload),
+        snapshot: ensurePlayers(state.snapshot, {
+          playerIds: [playerId, ...peerIds],
+        }),
+      };
+    }
+
+    case "RECEIVED_THEM": {
+      const { peerId } = event.payload;
+      return {
+        ...state,
+        snapshot: ensurePlayers(state.snapshot, { playerIds: [peerId] }),
       };
     }
 

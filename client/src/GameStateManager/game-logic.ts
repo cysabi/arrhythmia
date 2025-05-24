@@ -181,12 +181,18 @@ const defaultPositions = [
   [[18, 2], "left"],
 ];
 
-export function setPlayers(
+export function ensurePlayers(
   game: GameState,
-  payload: { playerId: string; peerIds: string[] },
+  payload: { playerIds: string[] },
 ): GameState {
-  const { playerId, peerIds } = payload;
-  const orderedIds = [playerId, ...peerIds].sort();
+  // Creates any missing entities for the provided ids
+  // Repositions players in starting positions according to ID sorting
+  // Guarantees that all clients have consistent positions for all players.
+  const { playerIds } = payload;
+  const existingPlayerIds = game.entities
+    .filter((e) => e.type === "player")
+    .map((e) => e.id);
+  const orderedIds = [...new Set([...existingPlayerIds, ...playerIds])].sort();
   return {
     ...game,
     entities: orderedIds.map((id) => {
