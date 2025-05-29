@@ -1,21 +1,11 @@
-import Board from "./BoardView";
-import { useClient } from "./WebSocketClient/client";
+import useClient from "./client/useClient";
+import Board from "./board";
 
 function App() {
-  const { view, act } = useClient();
-  // TODO: bind keyboard inputs to act to send a move
+  const view = useClient();
 
   return (
     <div className="h-svh w-svw flex flex-col">
-      <div>
-        <button
-          onClick={() => {
-            act("moveRight");
-          }}
-        >
-          MOVE RIGHT
-        </button>
-      </div>
       <div className="flex-grow">
         <Board gameState={view} />
       </div>

@@ -6,7 +6,7 @@ const Entity = ({ entity }: { entity: Entity }) => {
   const y = entity.position[1];
   return (
     <div
-      key={entity.id}
+      key={entity.type + "_" + x + y}
       style={{
         gridColumn: x,
         gridRow: y,
@@ -32,7 +32,7 @@ const Board = ({ gameState }: { gameState: GameState }) => {
       }}
     >
       {gameState.entities.map((entity) => (
-        <Entity key={entity.id} entity={entity} />
+        <Entity entity={entity} />
       ))}
     </div>
   );
