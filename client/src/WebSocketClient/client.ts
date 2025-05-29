@@ -106,7 +106,7 @@ export function useClient() {
       };
       dispatch({ type: "INPUT", payload });
       if (send) {
-        send(JSON.stringify(payload));
+        send(["action", payload.turnCount, action].join(":"));
       } else {
         console.error("Websocket not yet connected");
       }
