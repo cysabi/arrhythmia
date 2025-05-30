@@ -5,7 +5,7 @@ import type { Action } from "../types";
 const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  act: (action: Action) => void
+  act: (action: Action) => void,
 ) => {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {

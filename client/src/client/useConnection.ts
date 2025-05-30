@@ -4,7 +4,7 @@ import type { ClientEvent, ClientState } from "./useGameState";
 
 const useConnection = (
   state: ClientState,
-  dispatch: ActionDispatch<[client: ClientEvent]>
+  dispatch: ActionDispatch<[client: ClientEvent]>,
 ) => {
   const onMessage = useCallback(
     (data: string) => {
@@ -53,14 +53,14 @@ const useConnection = (
         }
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   return useRawConnection(onMessage);
 };
 
 const useRawConnection = (
-  onMessage: (data: string) => void
+  onMessage: (data: string) => void,
 ): [false, null] | [true, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 

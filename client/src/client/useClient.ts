@@ -11,6 +11,11 @@ const useClient = () => {
 
   const [connected, send] = useConnection(state, dispatch);
 
+  // TODO: add functionality to trigger game start:
+  // - UI: Overlay + Button?
+  // - Send message to server, ensure server broadcasts start timestamp
+  // - Verify start payload handling in client works (starts conductor)
+
   const act = useCallback(
     (action: Action) => {
       // TODO if you already acted this turn, return early
@@ -23,7 +28,7 @@ const useClient = () => {
       dispatch({ type: "INPUT", payload });
       send!(["action", payload.turnCount, payload.action].join(":"));
     },
-    [dispatch, send, state.turnCount, state.playerId]
+    [dispatch, send, state.turnCount, state.playerId],
   );
 
   useConductor(state, dispatch, act);
@@ -33,7 +38,7 @@ const useClient = () => {
     return progressGame(
       state.snapshot,
       [...state.validated, ...state.optimistic],
-      state.turnCount
+      state.turnCount,
     );
   }, [state]);
 

@@ -15,7 +15,7 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  map: GameState["map"]
+  map: GameState["map"],
 ): Position {
   let nextPosition: Position = [...currentPosition];
   switch (direction) {
@@ -42,7 +42,7 @@ function getNextPosition(
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState
+  currentState: GameState,
 ): GameState {
   const { turn, entities, map } = currentState;
 
@@ -147,7 +147,7 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  turnCount: number
+  turnCount: number,
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
@@ -183,7 +183,7 @@ const defaultPositions = [
 
 export function ensurePlayers(
   game: GameState,
-  payload: { playerIds: string[] }
+  payload: { playerIds: string[] },
 ): GameState {
   // Creates any missing entities for the provided ids
   // Repositions players in starting positions according to ID sorting
