@@ -6,32 +6,36 @@ import useConductor from "./useConductor";
 import useConnection from "./useConnection";
 import useInput from "./useInput";
 
+// TODO: add functionality to trigger game start:
+// - UI: Overlay + Button?
+// - Send message to server, ensure server broadcasts start timestamp
+// - Verify start payload handling in client works (starts conductor)
+
 const useClient = () => {
   const [state, dispatch] = useGameState();
 
   const [connected, send] = useConnection(state, dispatch);
 
-  // TODO: add functionality to trigger game start:
-  // - UI: Overlay + Button?
-  // - Send message to server, ensure server broadcasts start timestamp
-  // - Verify start payload handling in client works (starts conductor)
+  const beatManager = useConductor(state, dispatch);
 
+  // TODO: timing windows
+  // TODO: act() a skip immediately after rhythm timing window passes
   const act = useCallback(
     (action: Action) => {
-      // TODO if you already acted this turn, return early
+      if (state.optimistic.findLastIndex((v) => v.turnCount == state.turnCount) != -1) {
+        const payload = {
+          action,
+          turnCount: state.turnCount,
+          playerId: state.playerId,
+        };
 
-      const payload = {
-        action,
-        turnCount: state.turnCount,
-        playerId: state.playerId,
-      };
-      dispatch({ type: "INPUT", payload });
-      send!(["action", payload.turnCount, payload.action].join(":"));
+        dispatch({ type: "INPUT", payload });
+        send!(["action", payload.turnCount, payload.action].join(":"));
+      }
     },
     [dispatch, send, state.turnCount, state.playerId],
   );
-
-  useConductor(state, dispatch, act);
+  
   useInput(state, dispatch, act);
 
   const view = useMemo(() => {

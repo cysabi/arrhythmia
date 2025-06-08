@@ -1,13 +1,11 @@
 import { useEffect, useMemo, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
-import type { Action } from "../types";
 
 import clap from "../sounds/clap.wav";
 
 const useConductor = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  act: (action: Action) => void,
 ) => {
   const beatManager = useMemo(() => {
     const beatManager = new BeatManager();
@@ -23,8 +21,6 @@ const useConductor = (
   useEffect(() => {
     beatManager.startAt(new Date(new Date().valueOf() + 10));
   }, [state.startAt]);
-
-  // TODO act() a skip immediately after rhythm timing window passes
 
   return beatManager;
 };

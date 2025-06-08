@@ -9,8 +9,6 @@ const useInput = (
 ) => {
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
-      // TODO if you are outside of the timing window, do a skip for this turn
-
       const key = e.key;
       switch (key) {
         case "w":
