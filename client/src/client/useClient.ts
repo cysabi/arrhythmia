@@ -2,7 +2,7 @@ import { useCallback, useMemo } from "react";
 import { progressGame } from "./engine";
 import useGameState from "./useGameState";
 import type { Action } from "../types";
-import useConductor from "./useConductor";
+import useConductor, { BeatManager } from "./useConductor";
 import useConnection from "./useConnection";
 import useInput from "./useInput";
 
@@ -16,14 +16,13 @@ const useClient = () => {
 
   const [connected, send] = useConnection(state, dispatch);
 
-  const beatManager = useConductor(state, dispatch);
+  const getBeat = useConductor(state, dispatch);
 
   // TODO: timing windows
-  // TODO: act() a skip immediately after rhythm timing window passes
   const act = useCallback(
     (action: Action) => {
       if (
-        state.optimistic.findLastIndex((v) => v.turnCount == state.turnCount) !=
+        state.optimistic.findLastIndex((v) => v.turnCount == state.turnCount) ===
         -1
       ) {
         const payload = {
@@ -31,6 +30,7 @@ const useClient = () => {
           turnCount: state.turnCount,
           playerId: state.playerId,
         };
+        console.log(getBeat())
 
         dispatch({ type: "INPUT", payload });
         send!(["action", payload.turnCount, payload.action].join(":"));

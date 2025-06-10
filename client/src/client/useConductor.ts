@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ActionDispatch } from "react";
+import { useCallback, useEffect, useMemo, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
 
 import clap from "../sounds/clap.wav";
@@ -7,6 +7,9 @@ const useConductor = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
 ) => {
+  // cache fn that takes stuff from beatmanager to figure out beat + offset
+  // beat, ms, audio content, beat
+
   const beatManager = useMemo(() => {
     const beatManager = new BeatManager();
     beatManager.onBeat = () => {
@@ -18,11 +21,26 @@ const useConductor = (
     return beatManager;
   }, []);
 
+  const getBeat = useCallback(() => {
+    
+    if (state.startAt) {
+      // curr beat, offset
+      
+      console.log((new Date().valueOf() - state.startAt) / beatManager.beatMs);
+      return (new Date().valueOf() - state.startAt) / beatManager.beatMs;
+    }
+  }, 
+  [state, beatManager])
+
   useEffect(() => {
-    beatManager.startAt(new Date(new Date().valueOf() + 10));
+    if (!state.startAt) {
+      dispatch({type: "RECEIVED_START", payload: {at: new Date().valueOf()}}) 
+      return;
+    }
+    beatManager.startAt(new Date(state.startAt)); // sync start of game for everyone
   }, [state.startAt]);
 
-  return beatManager;
+  return getBeat;
 };
 
 export class BeatManager {
