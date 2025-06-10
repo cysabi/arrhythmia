@@ -95,14 +95,14 @@ export interface ClientState {
   snapshot: GameState;
   validated: ActionPayload[];
   optimistic: ActionPayload[];
-  startAt: Date | null;
+  startAt: number | null;
 }
 
 export type ClientEvent =
   | { type: "RECIEVED_ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
   | { type: "TICK" }
-  | { type: "RECEIVED_START"; payload: { at: Date } }
+  | { type: "RECEIVED_START"; payload: { at: number } }
   | {
       type: "RECEIVED_YOU";
       payload: { playerId: string; peerIds: string[] };

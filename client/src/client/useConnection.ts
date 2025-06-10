@@ -36,7 +36,7 @@ const useConnection = (
 
         case "start": {
           // TODO: try to use performance instead for precision/clock sync
-          const at = new Date(payload.shift()!);
+          const at = Date.parse(payload.shift()!);
           dispatch({ type: "RECEIVED_START", payload: { at } });
           break;
         }

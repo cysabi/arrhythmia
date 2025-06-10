@@ -22,7 +22,10 @@ const useClient = () => {
   // TODO: act() a skip immediately after rhythm timing window passes
   const act = useCallback(
     (action: Action) => {
-      if (state.optimistic.findLastIndex((v) => v.turnCount == state.turnCount) != -1) {
+      if (
+        state.optimistic.findLastIndex((v) => v.turnCount == state.turnCount) !=
+        -1
+      ) {
         const payload = {
           action,
           turnCount: state.turnCount,
@@ -35,7 +38,7 @@ const useClient = () => {
     },
     [dispatch, send, state.turnCount, state.playerId],
   );
-  
+
   useInput(state, dispatch, act);
 
   const view = useMemo(() => {
