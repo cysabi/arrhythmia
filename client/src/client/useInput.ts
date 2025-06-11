@@ -1,4 +1,4 @@
-import { useEffect, type ActionDispatch } from "react";
+import { useEffect, useRef, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
 import type { Action } from "../types";
 
@@ -8,7 +8,9 @@ const useInput = (
   getBeat: () => { beat: number; offset: number },
   send: WebSocket["send"],
 ) => {
-  const act = (actionInput: Action) => {
+  const actRef = useRef<(a: Action) => void | null>(null);
+
+  actRef.current = (actionInput: Action) => {
     const { beat, offset } = getBeat();
     console.log(beat, offset);
 
@@ -30,6 +32,10 @@ const useInput = (
 
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {
+      const act = actRef.current;
+      if (!act) return console.error("Act not yet registered.");
+
+      console.log("FIRING KEYDOWN");
       const key = e.key;
       switch (key) {
         case "w":
@@ -49,7 +55,7 @@ const useInput = (
     return () => {
       document.removeEventListener("keydown", handleKeydown);
     };
-  });
+  }, []);
 };
 
 export default useInput;
