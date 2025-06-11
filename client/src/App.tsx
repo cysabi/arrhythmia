@@ -2,7 +2,11 @@ import useClient from "./client/useClient";
 import Board from "./board";
 
 function App() {
-  const view = useClient();
+  const [connected, view] = useClient();
+
+  if (!connected) {
+    return "connecting..."
+  }
 
   return (
     <div className="h-svh w-svw flex flex-col">

@@ -1,9 +1,8 @@
 import React, { useCallback, type ActionDispatch } from "react";
 import type { Action } from "../types";
-import type { ClientEvent, ClientState } from "./useGameState";
+import type { ClientEvent } from "./useGameState";
 
 const useConnection = (
-  state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
 ) => {
   const onMessage = useCallback(
@@ -61,7 +60,7 @@ const useConnection = (
 
 const useRawConnection = (
   onMessage: (data: string) => void,
-): [false, null] | [true, WebSocket["send"]] => {
+): [boolean, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 
   const [connected, setConnected] = React.useState(false);
@@ -94,7 +93,7 @@ const useRawConnection = (
   }, []); // triggers once
 
   if (!connected) {
-    return [connected, null];
+    return [connected, (data) => console.error("not connected! send is fallthrough", data)];
   }
   return [connected, (data) => ws.current!.send(data)];
 };

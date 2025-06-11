@@ -21,39 +21,39 @@ const useConductor = (
     return beatManager;
   }, []);
 
-  const getBeat = useCallback(() => {
-    
-    if (state.startAt) {
-      // curr beat, offset
-      
-      console.log((new Date().valueOf() - state.startAt) / beatManager.beatMs);
-      return (new Date().valueOf() - state.startAt) / beatManager.beatMs;
-    }
-  }, 
-  [state, beatManager])
-
   useEffect(() => {
     if (!state.startAt) {
-      dispatch({type: "RECEIVED_START", payload: {at: new Date().valueOf()}}) 
+      dispatch({ type: "RECEIVED_START", payload: { at: new Date().valueOf() } }) // TODO: this is a dummy fill
       return;
     }
     beatManager.startAt(new Date(state.startAt)); // sync start of game for everyone
   }, [state.startAt]);
+
+  const getBeat = useCallback(() => {
+    // curr beat, offset
+    console.log((new Date().valueOf() - state.startAt!) / beatManager.msPerBeat);
+
+    const beatFloat = (new Date().valueOf() - state.startAt!) / beatManager.msPerBeat;
+    const beat = Math.round(beatFloat)
+    const offset = beatFloat - beat // the offBy unit is in beats!!
+
+    return { beat, offset }
+  }, [state.startAt, beatManager])
 
   return getBeat;
 };
 
 export class BeatManager {
   interval: number | null;
-  beatMs: number;
+  msPerBeat: number;
   audioContext: AudioContext;
   beatBuffer: AudioBuffer | null;
 
-  beatCallback = () => {};
+  beatCallback = () => { };
 
   constructor() {
     this.interval = null;
-    this.beatMs = 2000;
+    this.msPerBeat = 2000;
     this.audioContext = new AudioContext();
     this.beatBuffer = null;
   }
@@ -70,7 +70,7 @@ export class BeatManager {
       // TODO: start music playback here!
       this.interval = setInterval(() => {
         this.beat();
-      }, this.beatMs);
+      }, this.msPerBeat);
     }, at.getMilliseconds() - new Date().getMilliseconds());
   }
 
