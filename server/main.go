@@ -91,7 +91,7 @@ func main() {
 		switch payload := recievePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
-			if payload.turnCount > game.turnCount {
+			for payload.turnCount > game.turnCount {
 				game.BroadcastMissing(m)
 				game.actedThisBeat = make(map[PlayerId]bool)
 				game.turnCount += 1
