@@ -12,6 +12,8 @@ import useInput from "./useInput";
 
 const useClient = () => {
   // FIXME: Showing other player moves is lagging by at least 1 turn
+  // FIXME: Projectiles are not appearing from other players!
+  // FIXME: Projectiles are not moving every turn incmrement (they should move even if all players do not)
   const [state, dispatch] = useGameState();
 
   const [connected, send] = useConnection(dispatch);
