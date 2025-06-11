@@ -28,6 +28,7 @@ export type Player = {
 };
 export type Projectile = {
   type: "projectile";
+  id: ID;
   owner: Player["id"];
   position: Position;
   facing: Direction;

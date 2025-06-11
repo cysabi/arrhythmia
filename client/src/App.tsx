@@ -5,7 +5,7 @@ function App() {
   const [connected, view] = useClient();
 
   if (!connected) {
-    return "connecting..."
+    return "connecting...";
   }
 
   return (

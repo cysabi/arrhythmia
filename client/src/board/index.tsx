@@ -32,7 +32,7 @@ const Board = ({ gameState }: { gameState: GameState }) => {
       }}
     >
       {gameState.entities.map((entity) => (
-        <Entity entity={entity} />
+        <Entity key={entity.id} entity={entity} />
       ))}
     </div>
   );

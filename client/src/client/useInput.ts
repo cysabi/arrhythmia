@@ -5,19 +5,19 @@ import type { Action } from "../types";
 const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  getBeat: () => { beat: number, offset: number },
-  send: WebSocket["send"], 
+  getBeat: () => { beat: number; offset: number },
+  send: WebSocket["send"],
 ) => {
   const act = (actionInput: Action) => {
-    const { beat, offset } = getBeat()
-    console.log(beat, offset)
+    const { beat, offset } = getBeat();
+    console.log(beat, offset);
 
-    console.log({ opt: state.optimistic })
+    console.log({ opt: state.optimistic });
     if (state.optimistic.find((p) => p.turnCount === beat)) {
-      return // already sent a move this beat
+      return; // already sent a move this beat
     }
 
-    const action = Math.abs(offset) > 0.25 ? "skip" : actionInput  // you are too offbeat >:(
+    const action = Math.abs(offset) > 0.25 ? "skip" : actionInput; // you are too offbeat >:(
     const payload = {
       action,
       turnCount: state.turnCount,
@@ -26,7 +26,7 @@ const useInput = (
 
     dispatch({ type: "INPUT", payload });
     send(["action", payload.turnCount, payload.action].join(":"));
-  }
+  };
 
   useEffect(() => {
     const handleKeydown = (e: KeyboardEvent) => {

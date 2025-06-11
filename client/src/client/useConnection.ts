@@ -2,9 +2,7 @@ import React, { useCallback, type ActionDispatch } from "react";
 import type { Action } from "../types";
 import type { ClientEvent } from "./useGameState";
 
-const useConnection = (
-  dispatch: ActionDispatch<[client: ClientEvent]>,
-) => {
+const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
   const onMessage = useCallback(
     (data: string) => {
       const payload = data.split(":");
@@ -93,7 +91,10 @@ const useRawConnection = (
   }, []); // triggers once
 
   if (!connected) {
-    return [connected, (data) => console.error("not connected! send is fallthrough", data)];
+    return [
+      connected,
+      (data) => console.error("not connected! send is fallthrough", data),
+    ];
   }
   return [connected, (data) => ws.current!.send(data)];
 };

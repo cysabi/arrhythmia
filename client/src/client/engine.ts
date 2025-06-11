@@ -7,6 +7,7 @@ import type {
 } from "../types";
 
 const defaultHealth = 5;
+let projectileId = 0;
 
 function isSamePosition(p1: Position, p2: Position): boolean {
   return p1[0] === p2[0] && p1[1] === p2[1];
@@ -63,6 +64,7 @@ export function applyAction(
           newEntities.push(entity);
           newEntities.push({
             type: "projectile",
+            id: `${entity.id}-${projectileId++}`,
             owner: entity.id,
             position: getNextPosition(entity.facing, entity.position, map),
             facing: entity.facing,
