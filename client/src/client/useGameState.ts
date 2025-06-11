@@ -56,8 +56,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "TICK": {
-      const turnCount = state.turnCount + 1;
-      return { ...state, turnCount };
+      return { ...state, turnCount: state.turnCount + 1 };
     }
   }
 };

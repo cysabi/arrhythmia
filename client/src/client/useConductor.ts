@@ -12,11 +12,11 @@ const useConductor = (
 
   const beatManager = useMemo(() => {
     const beatManager = new BeatManager();
-    beatManager.onBeat = () => {
+    beatManager.onBeat(() => {
       dispatch({
         type: "TICK",
       });
-    };
+    });
     beatManager.loadAudio().then(() => console.log("Loaded song buffer."));
     return beatManager;
   }, []);

@@ -12,13 +12,20 @@ const useInput = (
 
   actRef.current = (actionInput: Action) => {
     const { beat, offset } = getBeat();
-    console.log(beat, offset);
 
-    console.log({ opt: state.optimistic });
-    if (state.optimistic.find((p) => p.turnCount === beat)) {
-      return; // already sent a move this beat
+    console.log(beat, state.turnCount);
+
+    // FIXME: Allows multiple per beat!
+    if (
+      [...state.optimistic, ...state.validated].find(
+        (p) => p.turnCount === beat,
+      )
+    ) {
+      // TODO: give error feedback -- already moved!
+      return;
     }
 
+    // TODO: give error feedback -- off timing!
     const action = Math.abs(offset) > 0.25 ? "skip" : actionInput; // you are too offbeat >:(
     const payload = {
       action,

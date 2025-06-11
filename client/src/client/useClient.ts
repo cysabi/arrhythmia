@@ -11,6 +11,7 @@ import useInput from "./useInput";
 // - Verify start payload handling in client works (starts conductor)
 
 const useClient = () => {
+  // FIXME: Showing other player moves is lagging by at least 1 turn
   const [state, dispatch] = useGameState();
 
   const [connected, send] = useConnection(dispatch);
