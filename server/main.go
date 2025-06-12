@@ -28,11 +28,13 @@ func (g Game) New() Game {
 func (g *Game) ReceiveAction(pid PlayerId, action PayloadAction) {
 	g.mu.Lock()
 	defer g.mu.Unlock()
+	// Server should determine turncount.
 	if action.turnCount != g.turnCount {
 		// Ignore actions not for the current beat
 		return
 	}
 	// Only accept the first action per player per beat
+	// alternatively on a double action BLOCK.
 	if _, exists := g.actions[pid]; !exists {
 		g.actions[pid] = action
 	}
@@ -61,11 +63,12 @@ func (g *Game) ProcessBeat(m *melody.Melody) {
 	}
 
 	// Broadcast all actions for this beat
+	// own actions?
 	for _, action := range g.actions {
 		m.Broadcast([]byte(action.String()))
 	}
 
-	// Prepare for next beat
+	// Prepare for next beat (make new)
 	g.actions = make(map[PlayerId]PayloadAction)
 	g.turnCount++
 }
