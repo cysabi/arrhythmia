@@ -26,7 +26,7 @@ const useClient = () => {
     return progressGame(
       state.snapshot,
       [...state.validated, ...state.optimistic],
-      state.turnCount,
+      state.turnCount
     );
   }, [state]);
 

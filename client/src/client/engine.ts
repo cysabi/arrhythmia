@@ -16,7 +16,7 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  map: GameState["map"],
+  map: GameState["map"]
 ): Position {
   let nextPosition: Position = [...currentPosition];
   switch (direction) {
@@ -43,12 +43,12 @@ function getNextPosition(
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState,
+  currentState: GameState
 ): GameState {
-  const { turn, entities, map } = currentState;
+  const { turnCount: turn, entities, map } = currentState;
 
   return {
-    turn,
+    turnCount: turn,
     map,
     entities: entities.reduce((newEntities: Entity[], entity) => {
       if (entity.type !== "player" || entity.id !== action.playerId) {
@@ -93,7 +93,7 @@ export function applyAction(
 }
 
 function tick(game: GameState): GameState {
-  const { entities, map, turn, ...rest } = game;
+  const { entities, map, turnCount: turn, ...rest } = game;
 
   // Build up a "linearized" map of where everything is to make
   // collision detection a constant-time lookup
@@ -139,7 +139,7 @@ function tick(game: GameState): GameState {
 
   return {
     map,
-    turn: turn + 1,
+    turnCount: turn + 1,
     // convert map back to a list
     entities: [...positionsMap.values()],
     ...rest,
@@ -149,31 +149,26 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  turnCount: number,
+  desiredTurnCount: number
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
-  if (actions.length === 0) {
-    // We're done!
-    // If caller is asking for a "future" turn, progress the tick
-    if (turnCount > game.turn) {
-      return tick(game);
-    } else {
-      return game;
+  for (let action of actions) {
+    if (action.turnCount > desiredTurnCount) {
+      break;
     }
+    if (action.turnCount > game.turnCount) {
+      game = tick(game);
+    }
+    game = applyAction(action, game);
   }
 
-  const [action, ...rest] = actions;
+  // continue to tick game up to desiredTurnCount even if we don't have actions for those turns
+  while (desiredTurnCount > game.turnCount) {
+    game = tick(game);
+  }
 
-  // Advance game state by 1 turn if action for next turn
-  if (game.turn < action.turnCount) game = tick(game);
-
-  // If action is _ahead_ of specified turn, ignore it
-  if (action.turnCount > turnCount) return progressGame(game, rest, turnCount);
-
-  const nextGameState = applyAction(action, game);
-
-  return progressGame(nextGameState, rest, turnCount);
+  return game;
 }
 
 const defaultPositions = [
@@ -185,7 +180,7 @@ const defaultPositions = [
 
 export function ensurePlayers(
   game: GameState,
-  payload: { playerIds: string[] },
+  payload: { playerIds: string[] }
 ): GameState {
   // Creates any missing entities for the provided ids
   // Repositions players in starting positions according to ID sorting
@@ -216,5 +211,5 @@ export const initialState: GameState = {
     width: 20,
   },
   entities: [],
-  turn: 0,
+  turnCount: 0,
 };

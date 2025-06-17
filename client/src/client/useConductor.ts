@@ -5,7 +5,7 @@ import clap from "../sounds/clap.wav";
 
 const useConductor = (
   state: ClientState,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   // cache fn that takes stuff from beatmanager to figure out beat + offset
   // beat, ms, audio content, beat
@@ -33,11 +33,6 @@ const useConductor = (
   }, [state.startAt]);
 
   const getBeat = useCallback(() => {
-    // curr beat, offset
-    console.log(
-      (new Date().valueOf() - state.startAt!) / beatManager.msPerBeat,
-    );
-
     const beatFloat =
       (new Date().valueOf() - state.startAt!) / beatManager.msPerBeat;
     const beat = Math.round(beatFloat);
@@ -72,7 +67,6 @@ export class BeatManager {
 
   startAt(at: Date) {
     setTimeout(() => {
-      console.log("setting interval");
       // TODO: start music playback here!
       this.interval = setInterval(() => {
         this.beat();
@@ -94,7 +88,6 @@ export class BeatManager {
     const source = this.audioContext.createBufferSource();
 
     if (this.beatBuffer) {
-      console.log("playing sound");
       source.buffer = this.beatBuffer;
       source.connect(this.audioContext.destination);
       source.start();

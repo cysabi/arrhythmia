@@ -15,9 +15,6 @@ const useInput = (
 
     console.log("beat:", beat, "turncount:", state.turnCount);
 
-    console.log("optimistic:", state.optimistic);
-    console.log("validated:", state.validated);
-
     // if player has already moved for beat that theyre trying to move for
     if (
       [...state.optimistic, ...state.validated].find(

@@ -15,7 +15,7 @@ export type GameState = {
     width: number;
   };
   entities: Entity[];
-  turn: number;
+  turnCount: number;
 };
 
 export type Entity = Player | Projectile;
