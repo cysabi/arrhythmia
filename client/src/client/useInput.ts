@@ -21,7 +21,7 @@ const useInput = (
     // if player has already moved for beat that theyre trying to move for
     if (
       [...state.optimistic, ...state.validated].find(
-        (p) => p.turnCount === state.turnCount
+        (p) => p.turnCount === beat
       )
     ) {
       // TODO: give error feedback -- already moved!
@@ -33,7 +33,7 @@ const useInput = (
     const action = Math.abs(offset) > 0.25 ? "skip" : actionInput; // you are too offbeat >:(
     const payload = {
       action,
-      turnCount: state.turnCount,
+      turnCount: beat,
       playerId: state.playerId,
     };
 
