@@ -51,11 +51,19 @@ const useInput = (
       switch (key) {
         case "w":
           return act("moveUp");
+        case "ArrowUp":
+          return act("moveUp");
         case "a":
+          return act("moveLeft");
+        case "ArrowLeft":
           return act("moveLeft");
         case "s":
           return act("moveDown");
+        case "ArrowDown":
+          return act("moveDown");
         case "d":
+          return act("moveRight");
+        case "ArrowRight":
           return act("moveRight");
         case " ":
           return act("shoot");
