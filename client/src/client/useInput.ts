@@ -6,22 +6,26 @@ const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
   getBeat: () => { beat: number; offset: number },
-  send: WebSocket["send"],
+  send: WebSocket["send"]
 ) => {
   const actRef = useRef<(a: Action) => void | null>(null);
 
   actRef.current = (actionInput: Action) => {
     const { beat, offset } = getBeat();
 
-    console.log(beat, state.turnCount);
+    console.log("beat:", beat, "turncount:", state.turnCount);
 
-    // FIXME: Allows multiple per beat!
+    console.log("optimistic:", state.optimistic);
+    console.log("validated:", state.validated);
+
+    // if player has already moved for beat that theyre trying to move for
     if (
       [...state.optimistic, ...state.validated].find(
-        (p) => p.turnCount === beat,
+        (p) => p.turnCount === state.turnCount
       )
     ) {
       // TODO: give error feedback -- already moved!
+      console.log("already moved!");
       return;
     }
 
