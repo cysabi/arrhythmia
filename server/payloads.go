@@ -3,13 +3,7 @@ package main
 import (
 	"strconv"
 	"strings"
-	"time"
 )
-
-type Payload interface {
-	New(PlayerId, []string) Payload
-	String() string
-}
 
 func recievePayload(pid PlayerId, msg string) Payload {
 	attr := strings.Split(msg, ":")
@@ -19,87 +13,49 @@ func recievePayload(pid PlayerId, msg string) Payload {
 
 	switch msgType {
 	case "start":
-		return PayloadStart{}.New(pid, msgPayload)
+		return PayloadStart{}.Recieve(pid, msgPayload)
 	case "action":
-		return PayloadAction{}.New(pid, msgPayload)
+		return PayloadAction{}.Recieve(pid, msgPayload)
 	default:
 		panic("unknown payload type")
 	}
 }
 
-// PayloadYou
-type PayloadYou struct {
-	pid    PlayerId
-	others []string
-}
-
-func (PayloadYou) New(pid PlayerId, attr []string) Payload {
-	others := strings.Split(attr[0], ",")
-
-	return PayloadYou{
-		pid:    pid,
-		others: others,
-	}
-}
-
-func (p PayloadYou) String() string {
-	return strings.Join([]string{
-		"you",
-		string(p.pid),
-		strings.Join(p.others, ","),
-	}, ":")
-}
-
-// PayloadThem
-type PayloadThem struct {
-	pid PlayerId
-}
-
-func (PayloadThem) New(pid PlayerId, attr []string) Payload {
-	return PayloadThem{
-		pid: pid,
-	}
-}
-
-func (p PayloadThem) String() string {
-	return strings.Join([]string{
-		"them",
-		string(p.pid),
-	}, ":")
+type Payload interface {
+	Recieve(PlayerId, []string) Payload
+	Send() string
 }
 
 // PayloadStart
+
 type PayloadStart struct {
-	pid  PlayerId
+	you  string
+	them []string
 	when string
 }
 
-func (PayloadStart) New(pid PlayerId, attr []string) Payload {
-	now := time.Now()
-	futureTime := now.Add(2 * time.Second)
-	when := futureTime.Format("2006-01-02T15:04:05.999999Z07:00")
-
-	return PayloadStart{
-		pid:  pid,
-		when: when,
-	}
+func (PayloadStart) Recieve(_ PlayerId, _ []string) Payload {
+	return PayloadStart{}
 }
 
-func (p PayloadStart) String() string {
+func (p PayloadStart) Send() string {
 	return strings.Join([]string{
 		"start",
+		p.you,
+		strings.Join(p.them, ","),
 		p.when,
 	}, ":")
 }
 
 // PayloadAction
+
 type PayloadAction struct {
 	pid       PlayerId
 	turnCount int
 	action    string
 }
 
-func (PayloadAction) New(pid PlayerId, attr []string) Payload {
+func (PayloadAction) Recieve(pid PlayerId, attr []string) Payload {
 	turnCount, err := strconv.Atoi(attr[0])
 	if err != nil {
 		panic(err)
@@ -113,7 +69,7 @@ func (PayloadAction) New(pid PlayerId, attr []string) Payload {
 	}
 }
 
-func (p PayloadAction) String() string {
+func (p PayloadAction) Send() string {
 	return strings.Join([]string{
 		"action",
 		string(p.pid),

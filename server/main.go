@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/olahol/melody"
 )
@@ -33,7 +33,7 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 				pid:       pid,
 				turnCount: g.turnCount,
 				action:    "skip",
-			}.String()
+			}.Send()
 			m.Broadcast([]byte(skipPayload))
 		}
 	}
@@ -63,22 +63,6 @@ func main() {
 		m.HandleRequest(w, r)
 	})
 
-	m.HandleConnect(func(s *melody.Session) {
-		game = Game{}.New() // TODO: add a seperate event for making a new game
-		                    // right now the game restarts each new connection
-
-		pid := GeneratePlayerId()
-		s.Set("pid", pid)
-
-		others := GetOthers(m, pid)
-		payloadYou := PayloadYou{}.New(pid, []string{others})
-		payloadThem := PayloadThem{}.New(pid, []string{})
-
-		s.Write([]byte(payloadYou.String()))
-		m.BroadcastOthers([]byte(payloadThem.String()), s)
-
-	})
-
 	// TODO:
 	// m.HandleDisconnect(func(s *melody.Session) {
 	//
@@ -95,7 +79,12 @@ func main() {
 		// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
 		//  broadcast move to other players so they're at most 1 turn behind
 
-		pid := s.MustGet("pid").(PlayerId)
+		key, exists := s.Get("pid")
+		if !exists {
+			return
+		}
+		pid := key.(PlayerId)
+
 		switch payload := recievePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
@@ -106,12 +95,35 @@ func main() {
 			}
 			if payload.turnCount == game.turnCount {
 				game.actedThisBeat[pid] = true
-				m.Broadcast([]byte(payload.String()))
+				m.Broadcast([]byte(payload.Send()))
 			}
 
 		case PayloadStart:
-			m.Broadcast([]byte(payload.String()))
+			sessions, _ := m.Sessions()
 
+			// reset state
+			PidReset()
+			game = Game{}.New()
+
+			// make pids
+			pids := make([]string, m.Len())
+			for i, session := range sessions {
+				pid = PidGenerate()
+				session.Set("pid", pid)
+				pids[i] = string(pid)
+			}
+
+			// set when/them
+			now := time.Now()
+			futureTime := now.Add(2 * time.Second)
+			payload.when = futureTime.Format("2006-01-02T15:04:05.999999Z07:00")
+			payload.them = pids
+
+			// write with you
+			for i, s := range sessions {
+				payload.you = pids[i]
+				s.Write([]byte(payload.Send()))
+			}
 		}
 	})
 
