@@ -1,4 +1,5 @@
 import useGameState from "./client/useGameState";
+import { Dev } from "./dev";
 import type { GameState } from "./types";
 
 export function Heart() {
@@ -9,18 +10,22 @@ export function Heart() {
     )
 }
 
-export function Health({ gameState }: { gameState: GameState }) {
+export function Health({ devFlag = false, gameState }: { devFlag: boolean, gameState: GameState }) {
     const [state, dispatch] = useGameState();
-    //const self = gameState.entities.find(entity => entity.id = state.playerId)
-
+    const alt = gameState.entities.find(entity => entity.id = state.playerId)
+    console.log('alt', alt)
+    console.log('state', state)
+    console.log('gamestate', gameState)
     // hardcoded
     const self = { id: '', position: [2, 2], facing: "right", type: "player", health: 5 }
     return (
-        <div className="absolute top-8 left-8 flex gap-4">
-            {[...Array(self.health)].map((_, i) => (
-                // <span key={i} className="inline-block w-4 h-4 bg-red-500 rounded-full mr-1"></span>
-                <Heart />
-            ))}
-        </div>
+        <>
+            <div className="absolute top-8 left-8 flex gap-4">
+                {[...Array(self.health)].map((_, i) => (
+                    <Heart key={`heart-${i}`} />
+                ))}
+            </div>
+            {devFlag && <Dev gameState={gameState} />} :
+        </>
     )
 }

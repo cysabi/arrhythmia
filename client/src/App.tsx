@@ -24,7 +24,7 @@ function App() {
     <div className="h-svh w-svw flex flex-col">
       <div className="flex-grow">
         <Board gameState={view} />
-        <Health gameState={view} />
+        <Health devFlag={true} gameState={view} />
       </div>
     </div>
   );
