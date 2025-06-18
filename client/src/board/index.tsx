@@ -1,5 +1,6 @@
 import type { Entity, GameState } from "../types";
 import { Player1, Player2, Projectile } from "./entities";
+import { Wall, Floor } from "./tiles";
 
 
 
