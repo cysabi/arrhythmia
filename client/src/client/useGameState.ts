@@ -1,12 +1,12 @@
 import { useReducer } from "react";
 import type { ActionPayload, GameState } from "../types";
-import { progressGame, initialState, ensurePlayers } from "./engine";
+import { progressGame, initGame } from "./engine";
 
 const useGameState = () => {
   return useReducer(reducer, {
     playerId: "",
     turnCount: 0,
-    snapshot: initialState,
+    snapshot: initGame(),
     validated: [],
     optimistic: [],
     startAt: null,
@@ -15,36 +15,15 @@ const useGameState = () => {
 
 const reducer = (state: ClientState, event: ClientEvent): ClientState => {
   switch (event.type) {
-    case "RECEIVED_YOU": {
-      const { playerId, peerIds } = event.payload;
+    case "RECEIVED_START": {
+      const { playerId, peerIds, startAt } = event.payload;
       return {
         ...state,
         playerId,
-        snapshot: ensurePlayers(
-          state.snapshot,
-          playerId,
-          [playerId, ...peerIds],
-        ),
+        snapshot: initGame({ playerId, peerIds }),
+        startAt,
       };
     }
-
-    case "RECEIVED_THEM": {
-      const { peerId } = event.payload;
-      return {
-        ...state,
-        snapshot: ensurePlayers(
-          state.snapshot,
-          state.playerId,
-          [peerId]),
-      };
-    }
-
-    case "RECEIVED_START":
-      const { at } = event.payload;
-      return {
-        ...state,
-        startAt: at,
-      };
 
     case "RECEIVED_ACTION": {
       let s = structuredClone(state);
@@ -106,14 +85,9 @@ export type ClientEvent =
   | { type: "RECEIVED_ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
   | { type: "TICK" }
-  | { type: "RECEIVED_START"; payload: { at: number } }
   | {
-      type: "RECEIVED_YOU";
-      payload: { playerId: string; peerIds: string[] };
-    }
-  | {
-      type: "RECEIVED_THEM";
-      payload: { peerId: string };
+      type: "RECEIVED_START";
+      payload: { playerId: string; peerIds: string[]; startAt: number };
     };
 
 export default useGameState;

@@ -3,10 +3,20 @@ import Board from "./board";
 import { Health } from "./health";
 
 function App() {
-  const [connected, view] = useClient();
+  const [connected, started, send, view] = useClient();
 
   if (!connected) {
     return "connecting...";
+  }
+
+  if (started !== true) {
+    console.log({ send: send.toString() });
+    return (
+      <div className="flex items-center gap-5">
+        <div>start?</div>
+        <button onClick={() => send("start")}>start!</button>
+      </div>
+    );
   }
 
   return (

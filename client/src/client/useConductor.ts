@@ -23,13 +23,14 @@ const useConductor = (
 
   useEffect(() => {
     if (!state.startAt) {
-      dispatch({
-        type: "RECEIVED_START",
-        payload: { at: new Date().valueOf() },
-      }); // TODO: this is a dummy fill
       return;
     }
-    beatManager.startAt(new Date(state.startAt)); // sync start of game for everyone
+    const timeout = beatManager.startAt(new Date(state.startAt)); // sync start of game for everyone
+
+    return () => {
+      clearTimeout(timeout);
+      beatManager.stop();
+    };
   }, [state.startAt]);
 
   const getBeat = useCallback(() => {
@@ -66,7 +67,7 @@ export class BeatManager {
   }
 
   startAt(at: Date) {
-    setTimeout(() => {
+    return setTimeout(() => {
       // TODO: start music playback here!
       this.interval = setInterval(() => {
         this.beat();

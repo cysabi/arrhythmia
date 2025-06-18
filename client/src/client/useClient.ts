@@ -30,6 +30,6 @@ const useClient = () => {
     );
   }, [state]);
 
-  return [connected, view] as const;
+  return [connected, state.startAt !== null, send, view] as const;
 };
 export default useClient;
