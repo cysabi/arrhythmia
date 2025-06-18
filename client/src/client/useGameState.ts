@@ -10,7 +10,6 @@ const useGameState = () => {
     validated: [],
     optimistic: [],
     startAt: null,
-    readyPlayerIds: new Set(),
   } as ClientState);
 };
 
@@ -80,7 +79,6 @@ export interface ClientState {
   validated: ActionPayload[];
   optimistic: ActionPayload[];
   startAt: number | null;
-  readyPlayerIds: Set<String>;
 }
 
 export type ClientEvent =

@@ -1,6 +1,6 @@
 import useClient from "./client/useClient";
 import Board from "./board";
-import { Health } from "./health";
+import { StartScreen } from "./views/startScreen";
 
 function App() {
   const [connected, started, send, view] = useClient();
@@ -10,12 +10,8 @@ function App() {
   }
 
   if (started !== true) {
-    return (
-      <div className="flex items-center gap-5">
-        <div>start?</div>
-        <button onClick={() => send("start")}>start!</button>
-      </div>
-    );
+    console.log({ send: send.toString() });
+    return <StartScreen />;
   }
 
   return (
