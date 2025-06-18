@@ -85,7 +85,7 @@ func main() {
 		}
 		pid := key.(PlayerId)
 
-		switch payload := recievePayload(pid, string(msg)).(type) {
+		switch payload := receivePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
 			for payload.turnCount > game.turnCount {

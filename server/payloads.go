@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func recievePayload(pid PlayerId, msg string) Payload {
+func receivePayload(pid PlayerId, msg string) Payload {
 	attr := strings.Split(msg, ":")
 
 	msgType := attr[0]
@@ -13,16 +13,16 @@ func recievePayload(pid PlayerId, msg string) Payload {
 
 	switch msgType {
 	case "start":
-		return PayloadStart{}.Recieve(pid, msgPayload)
+		return PayloadStart{}.Receive(pid, msgPayload)
 	case "action":
-		return PayloadAction{}.Recieve(pid, msgPayload)
+		return PayloadAction{}.Receive(pid, msgPayload)
 	default:
 		panic("unknown payload type")
 	}
 }
 
 type Payload interface {
-	Recieve(PlayerId, []string) Payload
+	Receive(PlayerId, []string) Payload
 	Send() string
 }
 
@@ -34,7 +34,7 @@ type PayloadStart struct {
 	when string
 }
 
-func (PayloadStart) Recieve(_ PlayerId, _ []string) Payload {
+func (PayloadStart) Receive(_ PlayerId, _ []string) Payload {
 	return PayloadStart{}
 }
 
@@ -55,7 +55,7 @@ type PayloadAction struct {
 	action    string
 }
 
-func (PayloadAction) Recieve(pid PlayerId, attr []string) Payload {
+func (PayloadAction) Receive(pid PlayerId, attr []string) Payload {
 	turnCount, err := strconv.Atoi(attr[0])
 	if err != nil {
 		panic(err)

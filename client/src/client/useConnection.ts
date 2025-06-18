@@ -43,21 +43,21 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
           const turnCount = parseInt(payload.shift()!);
           const action = payload.shift()! as Action;
           dispatch({
-            type: "RECIEVED_ACTION",
+            type: "RECEIVED_ACTION",
             payload: { playerId, turnCount, action },
           });
           break;
         }
       }
     },
-    [dispatch],
+    [dispatch]
   );
 
   return useRawConnection(onMessage);
 };
 
 const useRawConnection = (
-  onMessage: (data: string) => void,
+  onMessage: (data: string) => void
 ): [boolean, WebSocket["send"]] => {
   let ws = React.useRef(null as WebSocket | null);
 

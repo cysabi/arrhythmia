@@ -41,7 +41,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
         startAt: at,
       };
 
-    case "RECIEVED_ACTION": {
+    case "RECEIVED_ACTION": {
       let s = structuredClone(state);
 
       s = updateSnapshot(s, event.payload);
@@ -68,7 +68,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount,
+      snapshotTurnCount
     );
     state.validated = [];
   }
@@ -98,7 +98,7 @@ export interface ClientState {
 }
 
 export type ClientEvent =
-  | { type: "RECIEVED_ACTION"; payload: ActionPayload }
+  | { type: "RECEIVED_ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
   | { type: "TICK" }
   | { type: "RECEIVED_START"; payload: { at: number } }
