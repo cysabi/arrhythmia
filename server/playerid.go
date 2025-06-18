@@ -11,5 +11,5 @@ var pidCounter atomic.Uint64
 
 func GeneratePlayerId() PlayerId {
 	pidCounter.Add(1)
-	return PlayerId(fmt.Sprintf("player-%d", pidCounter.Load()))
+	return PlayerId(fmt.Sprintf("playerid_%d", pidCounter.Load()))
 }

@@ -64,7 +64,9 @@ func main() {
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
-		fmt.Println("Got a connection")
+		game = Game{}.New() // TODO: add a seperate event for making a new game
+		                    // right now the game restarts each new connection
+
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)
 
@@ -74,7 +76,13 @@ func main() {
 
 		s.Write([]byte(payloadYou.String()))
 		m.BroadcastOthers([]byte(payloadThem.String()), s)
+
 	})
+
+	// TODO:
+	// m.HandleDisconnect(func(s *melody.Session) {
+	//
+	// })
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		//
