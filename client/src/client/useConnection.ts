@@ -9,32 +9,15 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
       const type = payload.shift()!;
 
       switch (type) {
-        case "you": {
-          const playerId = payload.shift()!;
-          const peerIds = payload
-            .shift()!
-            .split(",")
-            .filter((pid) => pid.length > 0);
-          dispatch({
-            type: "RECEIVED_YOU",
-            payload: { playerId, peerIds },
-          });
-          break;
-        }
-
-        case "them": {
-          const peerId = payload.shift()!;
-          dispatch({
-            type: "RECEIVED_THEM",
-            payload: { peerId },
-          });
-          break;
-        }
-
         case "start": {
+          const playerId = payload.shift()!;
+          const peerIds = payload.shift()!.split(",");
+          const startAt = Date.parse(payload.shift()!);
           // TODO: try to use performance instead for precision/clock sync
-          const at = Date.parse(payload.shift()!);
-          dispatch({ type: "RECEIVED_START", payload: { at } });
+          dispatch({
+            type: "RECEIVED_START",
+            payload: { playerId, peerIds, startAt },
+          });
           break;
         }
 

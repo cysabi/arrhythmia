@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"strconv"
 	"strings"
 )
@@ -10,6 +11,8 @@ func receivePayload(pid PlayerId, msg string) Payload {
 
 	msgType := attr[0]
 	msgPayload := attr[1:]
+
+	log.Println(msgType, msgPayload)
 
 	switch msgType {
 	case "start":
@@ -39,10 +42,12 @@ func (PayloadStart) Receive(_ PlayerId, _ []string) Payload {
 }
 
 func (p PayloadStart) Send() string {
+	them := strings.Join(p.them, ",")
+
 	return strings.Join([]string{
 		"start",
 		p.you,
-		strings.Join(p.them, ","),
+		them,
 		p.when,
 	}, ":")
 }

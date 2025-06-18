@@ -174,43 +174,14 @@ export function progressGame(
   return game;
 }
 
-const defaultPositions = [
+const defaultPositions: [Position, Direction][] = [
   [[2, 2], "right"],
   [[18, 18], "left"],
   [[2, 18], "right"],
   [[18, 2], "left"],
 ];
 
-export function ensurePlayers(
-  game: GameState,
-  playerId: string,
-  playerIds: string[]
-): GameState {
-
-  // Creates any missing entities for the provided ids
-  // Repositions players in starting positions according to ID sorting
-  // Guarantees that all clients have consistent positions for all players.
-  const existingPlayerIds = game.entities
-    .filter((e) => e.type === "player")
-    .map((e) => e.id);
-  const orderedIds = [...new Set([...existingPlayerIds, ...playerIds])].sort();
-  return {
-    ...game,
-    entities: orderedIds.map((id): Player => {
-      const [position, facing] = defaultPositions[orderedIds.indexOf(id)];
-      return {
-        id,
-        position: position as Position,
-        facing: facing as Direction,
-        type: "player",
-        you: id === playerId,
-        health: defaultHealth,
-      };
-    }),
-  };
-}
-
-export const initialState: GameState = {
+const initialState: GameState = {
   map: {
     height: 20,
     width: 20,
@@ -218,3 +189,33 @@ export const initialState: GameState = {
   entities: [],
   turnCount: 0,
 };
+
+export function initGame(
+  props:
+    | {
+        playerId: string;
+        peerIds: string[];
+      }
+    | undefined = undefined
+): GameState {
+  const game = structuredClone(initialState);
+  if (props === undefined) return game;
+
+  const { playerId, peerIds } = props;
+  const playerIds = [playerId, ...peerIds].sort();
+
+  return {
+    ...game,
+    entities: playerIds.map((pid, i) => {
+      const [position, facing] = defaultPositions[i];
+      return {
+        type: "player",
+        id: pid,
+        position,
+        facing,
+        health: defaultHealth,
+        you: playerId === pid,
+      };
+    }),
+  };
+}

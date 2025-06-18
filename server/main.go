@@ -80,11 +80,10 @@ func main() {
 		//  broadcast move to other players so they're at most 1 turn behind
 
 		key, exists := s.Get("pid")
-		if !exists {
-			return
+		pid := PlayerId("")
+		if exists {
+			pid = key.(PlayerId)
 		}
-		pid := key.(PlayerId)
-
 		switch payload := receivePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
@@ -109,8 +108,8 @@ func main() {
 			pids := make([]string, m.Len())
 			for i, session := range sessions {
 				pid = PidGenerate()
-				session.Set("pid", pid)
 				pids[i] = string(pid)
+				session.Set("pid", pid)
 			}
 
 			// set when/them
