@@ -22,6 +22,7 @@ export type Entity = Player | Projectile;
 export type Player = {
   type: "player";
   id: ID;
+  you: boolean;
   position: Position;
   facing: Direction;
   health: number;

@@ -4,7 +4,10 @@ import type {
   Entity,
   Position,
   Direction,
+  Player,
 } from "../types";
+
+import type { ClientEvent } from "./useGameState";
 
 const defaultHealth = 5;
 let projectileId = 0;
@@ -180,25 +183,27 @@ const defaultPositions = [
 
 export function ensurePlayers(
   game: GameState,
-  payload: { playerIds: string[] }
+  playerId: string,
+  playerIds: string[]
 ): GameState {
+
   // Creates any missing entities for the provided ids
   // Repositions players in starting positions according to ID sorting
   // Guarantees that all clients have consistent positions for all players.
-  const { playerIds } = payload;
   const existingPlayerIds = game.entities
     .filter((e) => e.type === "player")
     .map((e) => e.id);
   const orderedIds = [...new Set([...existingPlayerIds, ...playerIds])].sort();
   return {
     ...game,
-    entities: orderedIds.map((id) => {
+    entities: orderedIds.map((id): Player => {
       const [position, facing] = defaultPositions[orderedIds.indexOf(id)];
       return {
         id,
         position: position as Position,
         facing: facing as Direction,
         type: "player",
+        you: id === playerId,
         health: defaultHealth,
       };
     }),
