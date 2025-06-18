@@ -1,5 +1,6 @@
 import useClient from "./client/useClient";
 import Board from "./board";
+import { Health } from "./health";
 
 function App() {
   const [connected, view] = useClient();
@@ -12,6 +13,7 @@ function App() {
     <div className="h-svh w-svw flex flex-col">
       <div className="flex-grow">
         <Board gameState={view} />
+        <Health gameState={view} />
       </div>
     </div>
   );
