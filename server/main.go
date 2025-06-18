@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strings"
@@ -65,7 +64,7 @@ func main() {
 
 	m.HandleConnect(func(s *melody.Session) {
 		game = Game{}.New() // TODO: add a seperate event for making a new game
-		                    // right now the game restarts each new connection
+		// right now the game restarts each new connection
 
 		pid := GeneratePlayerId()
 		s.Set("pid", pid)

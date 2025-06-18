@@ -20,9 +20,11 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       return {
         ...state,
         playerId,
-        snapshot: ensurePlayers(state.snapshot, {
-          playerIds: [playerId, ...peerIds],
-        }),
+        snapshot: ensurePlayers(
+          state.snapshot,
+          playerId,
+          [playerId, ...peerIds],
+        ),
       };
     }
 
@@ -30,7 +32,10 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       const { peerId } = event.payload;
       return {
         ...state,
-        snapshot: ensurePlayers(state.snapshot, { playerIds: [peerId] }),
+        snapshot: ensurePlayers(
+          state.snapshot,
+          state.playerId,
+          [peerId]),
       };
     }
 
