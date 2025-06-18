@@ -1,6 +1,7 @@
 import useClient from "./client/useClient";
 import Board from "./board";
 import { StartScreen } from "./views/startScreen";
+import { Health } from "./health";
 
 function App() {
   const [connected, started, send, view] = useClient();
