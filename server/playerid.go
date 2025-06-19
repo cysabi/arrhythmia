@@ -15,5 +15,5 @@ func PidGenerate() PlayerId {
 }
 
 func PidReset() {
-	pidCounter.Store(1)
+	pidCounter.Store(100)
 }

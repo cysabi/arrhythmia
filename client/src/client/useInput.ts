@@ -1,11 +1,13 @@
-import { useEffect, useRef, type ActionDispatch } from "react";
+import { act, useEffect, useRef, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
 import type { Action } from "../types";
 
 const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  getBeat: () => { beat: number; offset: number },
+  getBeat: () =>
+    | { beat: number; offset: number }
+    | { beat: null; offset: null },
   send: WebSocket["send"]
 ) => {
   const actRef = useRef<(a: Action) => void | null>(null);
@@ -13,7 +15,12 @@ const useInput = (
   actRef.current = (actionInput: Action) => {
     const { beat, offset } = getBeat();
 
-    console.log("beat:", beat, "turncount:", state.turnCount);
+    console.log({ act: { beat, offset } });
+
+    // song hasn't started yet
+    if (beat === null) {
+      return;
+    }
 
     // if player has already moved for beat that theyre trying to move for
     if (
@@ -22,7 +29,7 @@ const useInput = (
       )
     ) {
       // TODO: give error feedback -- already moved!
-      console.log("already moved!");
+      console.log({ act: "already moved!" });
       return;
     }
 
@@ -35,7 +42,7 @@ const useInput = (
     };
 
     dispatch({ type: "INPUT", payload });
-    send(["action", payload.turnCount, payload.action].join(":"));
+    send(["action", payload.turnCount, payload.action].join(";"));
   };
 
   useEffect(() => {
@@ -43,7 +50,6 @@ const useInput = (
       const act = actRef.current;
       if (!act) return console.error("Act not yet registered.");
 
-      console.log("FIRING KEYDOWN");
       const key = e.key;
       switch (key) {
         case "w":

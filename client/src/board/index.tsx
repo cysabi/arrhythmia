@@ -1,10 +1,7 @@
 import type { Entity, GameState } from "../types";
 import { Player1, Player2, Projectile } from "./entities";
 
-
-
 const Entity = ({ entity }: { entity: Entity }) => {
-  console.log(entity.id, parseFloat( entity.id.split("_")[1] ))
   const x = entity.position[0];
   const y = entity.position[1];
   return (
@@ -13,14 +10,10 @@ const Entity = ({ entity }: { entity: Entity }) => {
       style={{
         gridColumn: x,
         gridRow: y,
-      }}  
+      }}
     >
-      {entity.type === "player" && (
-        parseFloat(entity.id.split("_")[1]) % 2
-          ? <Player1 /> 
-          : <Player2 />
-        )
-      }
+      {entity.type === "player" &&
+        (parseFloat(entity.id.split("_")[1]) % 2 ? <Player1 /> : <Player2 />)}
       {entity.type === "projectile" && <Projectile />}
     </div>
   );

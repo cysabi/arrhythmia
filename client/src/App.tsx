@@ -9,7 +9,6 @@ function App() {
   }
 
   if (started !== true) {
-    console.log({ send: send.toString() });
     return (
       <div className="flex items-center gap-5">
         <div>start?</div>

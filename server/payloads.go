@@ -7,7 +7,7 @@ import (
 )
 
 func receivePayload(pid PlayerId, msg string) Payload {
-	attr := strings.Split(msg, ":")
+	attr := strings.Split(msg, ";")
 
 	msgType := attr[0]
 	msgPayload := attr[1:]
@@ -49,7 +49,7 @@ func (p PayloadStart) Send() string {
 		p.you,
 		them,
 		p.when,
-	}, ":")
+	}, ";")
 }
 
 // PayloadAction
@@ -80,5 +80,5 @@ func (p PayloadAction) Send() string {
 		string(p.pid),
 		strconv.Itoa(p.turnCount),
 		p.action,
-	}, ":")
+	}, ";")
 }

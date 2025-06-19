@@ -17,7 +17,9 @@ const useConductor = (
         type: "TICK",
       });
     });
-    beatManager.loadAudio().then(() => console.log("Loaded song buffer."));
+    beatManager
+      .loadAudio()
+      .then(() => console.log({ beatManager: "Loaded song buffer." }));
     return beatManager;
   }, []);
 
@@ -34,8 +36,11 @@ const useConductor = (
   }, [state.startAt]);
 
   const getBeat = useCallback(() => {
+    if (state.startAt === null) {
+      return { beat: null, offset: null };
+    }
     const beatFloat =
-      (new Date().valueOf() - state.startAt!) / beatManager.msPerBeat;
+      (new Date().valueOf() - state.startAt) / beatManager.msPerBeat;
     const beat = Math.round(beatFloat);
     const offset = beatFloat - beat; // the offBy unit is in beats!!
 
@@ -93,7 +98,7 @@ export class BeatManager {
       source.connect(this.audioContext.destination);
       source.start();
     } else {
-      console.warn("Beat buffer not initialized");
+      console.warn({ beatManager: "Beat buffer not initialized" });
     }
 
     this.beatCallback && this.beatCallback();
