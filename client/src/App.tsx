@@ -1,6 +1,7 @@
 import useClient from "./client/useClient";
 import Board from "./board";
 import { StartScreen } from "./views/startScreen";
+import { Hud } from "./hud/hud";
 
 function App() {
   const [connected, started, send, view] = useClient();
@@ -17,11 +18,11 @@ function App() {
       </div>
     );
   }
-
   return (
     <div className="h-svh w-svw flex flex-col">
       <div className="flex-grow">
         <Board gameState={view} />
+        <Hud gameState={view} />
       </div>
     </div>
   );
