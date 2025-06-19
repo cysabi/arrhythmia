@@ -4,13 +4,25 @@ import type {
   Entity,
   Position,
   Direction,
-  Player,
 } from "../types";
 
-import type { ClientEvent } from "./useGameState";
-
-const defaultHealth = 5;
 let projectileId = 0;
+const defaultHealth = 5;
+const defaultPositions: [Position, Direction][] = [
+  [[2, 2], "right"],
+  [[18, 18], "left"],
+  [[2, 18], "right"],
+  [[18, 2], "left"],
+];
+
+const initialState: GameState = {
+  map: {
+    height: 20,
+    width: 20,
+  },
+  entities: [],
+  turnCount: 0,
+};
 
 function isSamePosition(p1: Position, p2: Position): boolean {
   return p1[0] === p2[0] && p1[1] === p2[1];
@@ -174,22 +186,6 @@ export function progressGame(
   return game;
 }
 
-const defaultPositions: [Position, Direction][] = [
-  [[2, 2], "right"],
-  [[18, 18], "left"],
-  [[2, 18], "right"],
-  [[18, 2], "left"],
-];
-
-const initialState: GameState = {
-  map: {
-    height: 20,
-    width: 20,
-  },
-  entities: [],
-  turnCount: 0,
-};
-
 export function initGame(
   props:
     | {
@@ -202,11 +198,10 @@ export function initGame(
   if (props === undefined) return game;
 
   const { playerId, peerIds } = props;
-  const playerIds = [playerId, ...peerIds].sort();
 
   return {
     ...game,
-    entities: playerIds.map((pid, i) => {
+    entities: peerIds.map((pid, i) => {
       const [position, facing] = defaultPositions[i];
       return {
         type: "player",

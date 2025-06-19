@@ -115,7 +115,7 @@ func main() {
 			// set when/them
 			now := time.Now()
 			futureTime := now.Add(2 * time.Second)
-			payload.when = futureTime.Format("2006-01-02T15:04:05.999999Z07:00")
+			payload.when = futureTime.Format("2006-01-02T15:04:05Z07:00")
 			payload.them = pids
 
 			// write with you

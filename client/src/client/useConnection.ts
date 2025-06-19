@@ -5,7 +5,9 @@ import type { ClientEvent } from "./useGameState";
 const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
   const onMessage = useCallback(
     (data: string) => {
-      const payload = data.split(":");
+      console.log({ payload: data.split(";") });
+
+      const payload = data.split(";");
       const type = payload.shift()!;
 
       switch (type) {
@@ -50,21 +52,21 @@ const useRawConnection = (
     ws.current = new WebSocket("ws://localhost:5174/ws");
 
     ws.current.addEventListener("open", () => {
-      console.debug("ws::open");
+      console.debug({ ws: "open" });
       setConnected(true);
     });
     ws.current.addEventListener("close", () => {
-      console.debug("ws::close");
+      console.debug({ ws: "close" });
       setConnected(false);
     });
 
     ws.current.addEventListener("message", (event) => {
-      console.debug("ws::message", event);
+      console.debug({ ws: { message: event } });
       onMessage(event.data);
     });
 
     ws.current.addEventListener("error", (event) => {
-      console.error("ws::error", event);
+      console.error({ ws: { error: event } });
     });
 
     // clean up/close ws before calling next useEffect n making new connection
