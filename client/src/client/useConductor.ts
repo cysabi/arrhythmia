@@ -75,6 +75,7 @@ export class BeatManager {
     return setTimeout(() => {
       // TODO: start music playback here!
       this.interval = setInterval(() => {
+        console.log("beat");
         this.beat();
       }, this.msPerBeat);
     }, at.getMilliseconds() - new Date().getMilliseconds());
