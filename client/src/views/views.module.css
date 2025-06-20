@@ -16,6 +16,7 @@
   width: 160px;
   margin: auto;
   background-color: rgb(83, 163, 83);
+  cursor: pointer;
 
   display: flex;
   justify-content: center;
