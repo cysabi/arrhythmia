@@ -23,11 +23,7 @@ export default function App() {
       <div className="flex-grow">
         <Board gameState={view} />
       </div>
-      <MovingBars duration={2} />
+      {/* <MovingBars duration={2} /> */}
     </div>
   );
-}
-
-function BeatDisplay() {
-  return <div></div>;
 }
