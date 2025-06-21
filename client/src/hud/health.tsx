@@ -5,10 +5,7 @@ import { Heart } from "./heart";
 
 export function Health({ gameState }: { gameState: GameState }) {
     const [state, dispatch] = useGameState();
-    const alt = gameState.entities.find(entity => entity.id = state.playerId)
-
-    // TODO: remove hardcode
-    const self = { id: '', position: [2, 2], facing: "right", type: "player", health: 5 }
+    const self = gameState.entities.find(entity => entity.type === "player" && entity.you == true)
     return (
         <>
             <div className="absolute top-8 left-8 flex gap-4">
