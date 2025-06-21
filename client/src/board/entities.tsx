@@ -9,3 +9,7 @@ export const Player2 = () => {
 export const Projectile = () => {
   return <img src="/trash.jpg" alt="A projectile" />;
 };
+
+export const Skull = () => {
+  return <img src="/skull.svg" alt="skull" />;
+};
