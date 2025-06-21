@@ -52,7 +52,7 @@ export const StartScreen = ({
           onClick={() => send("start")}
           disabled={status === "scheduled"}
         >
-          {status === "idle" ? "START" : "starting..."}
+          {status === "idle" ? "START" : "READY..."}
         </button>
       </div>
     </div>

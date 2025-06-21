@@ -23,21 +23,21 @@ const useInput = (
       )
     ) {
       // TODO: give error feedback -- already moved!
-      console.log({ act: "already moved!" });
-      return;
+      return console.log({ act: "already moved!" });
     }
 
-    // TODO: give error feedback -- off timing!
-    const action = Math.abs(offset) > 0.2 ? "skip" : actionInput; // you are too offbeat >:(
+    let action = actionInput;
+    if (Math.abs(offset) > 0.225) {
+      // TODO: give error feedback -- off timing!
+      return console.log({ act: "you are too offbeat!" });
+    }
     const payload = {
       action,
       turnCount: beat,
       playerId: state.playerId,
     };
 
-    console.log("hang?");
     dispatch({ type: "INPUT", payload });
-    console.log("hang??");
     send(["action", payload.turnCount, payload.action].join(";"));
   };
 
@@ -49,19 +49,15 @@ const useInput = (
       const key = e.key;
       switch (key) {
         case "w":
-          return act("moveUp");
         case "ArrowUp":
           return act("moveUp");
         case "a":
-          return act("moveLeft");
         case "ArrowLeft":
           return act("moveLeft");
         case "s":
-          return act("moveDown");
         case "ArrowDown":
           return act("moveDown");
         case "d":
-          return act("moveRight");
         case "ArrowRight":
           return act("moveRight");
         case " ":

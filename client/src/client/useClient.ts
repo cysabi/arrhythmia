@@ -16,8 +16,6 @@ const useClient = () => {
   // FIXME: Projectiles are not moving every turn incmrement (they should move even if all players do not)
   const [state, dispatch] = useGameState();
 
-  console.log("rerender!!");
-
   const ws = useConnection(dispatch);
 
   const conductor = useConductor(state.startAt, dispatch);

@@ -1,12 +1,14 @@
 import { useRef, useEffect, type ActionDispatch, useCallback } from "react";
 import type { ClientEvent } from "./useGameState";
 import * as Tone from "tone";
-import song from "../sounds/song.wav";
-import clap from "../sounds/clap.wav";
 import type { TransportClass } from "tone/build/esm/core/clock/Transport";
 
 const track1 = {
-  bpm: 151,
+  bpm: 152,
+  offset: 0.5,
+  volume: -20,
+  song: "/song.wav",
+  loopPoints: ["3m", "109m"] as const,
 };
 
 const useConductor = (
@@ -16,13 +18,11 @@ const useConductor = (
   const transport = useTransport(startAt, dispatch);
 
   const getBeat = useCallback(() => {
-    const msPerBeat = (60 * 1000) / transport.current!.bpm.value;
-    const beatFloat = (now() - startAt!) / msPerBeat;
-
-    console.log({ beatFloat });
+    const spb = 60 / transport.current!.bpm.value;
+    const beatFloat = transport.current.seconds / spb - track1.offset;
 
     const beat = Math.round(beatFloat);
-    const offset = beatFloat - beat; // the offBy unit is in beats!!
+    const offset = beatFloat - beat;
 
     return { beat, offset };
   }, [startAt]);
@@ -47,16 +47,14 @@ const useTransport = (
     transport.current.bpm.value = track1.bpm;
   }
   if (players.current === null)
-    players.current = new Tone.Players({ clap, song }).toDestination();
+    players.current = new Tone.Players({
+      song: track1.song,
+      clap: "/clap.wav",
+    }).toDestination();
 
   useEffect(() => {
     if (!startAt) return;
     transport.current.seconds = 0;
-
-    // song
-    transport.current.schedule((time) => {
-      players.current.player("song").start(time);
-    }, 0);
 
     // clap
     transport.current.scheduleRepeat((time) => {
@@ -64,8 +62,15 @@ const useTransport = (
       dispatch({ type: "TICK" });
     }, "4n");
 
-    console.log({ startAt, now: now() });
+    // song
+    transport.current.schedule((time) => {
+      players.current.player("song").loop = true;
+      players.current.player("song").volume.value = track1.volume;
+      players.current.player("song").setLoopPoints(...track1.loopPoints);
+      players.current.player("song").start(time, 0);
+    }, `+${track1.offset}n`);
 
+    console.log({ startAt });
     transport.current.start(`+${(startAt - now()) / 1000}`);
 
     return function cleanup() {
