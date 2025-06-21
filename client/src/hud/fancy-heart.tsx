@@ -10,7 +10,7 @@ export function FancyHeart({ isAnimating, direction, size, onAnimationComplete }
     useEffect(() => {
         if (!isAnimating) return;
 
-        const frames = direction === 'filling' ? [1, 2, 3, 4] : [4, 3, 2, 1];
+        const frames = direction === 'filling' ? [1, 2, 3, 4] : [3, 2, 1];
         let frameIndex = 0;
 
         const interval = setInterval(() => {
@@ -23,12 +23,11 @@ export function FancyHeart({ isAnimating, direction, size, onAnimationComplete }
                     onAnimationComplete?.(); // Call the callback
                 }
             }
-        }, 150);
+        }, 100);
 
         return () => clearInterval(interval);
-    }, [isAnimating, direction]);
+    }, [isAnimating, direction, onAnimationComplete]);
 
-    console.log('current-frame', currentFrame)
 
     return (
         <div className={SIZER[size]}>
