@@ -46,9 +46,21 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
         setAnimatingHeart(null);
     };
 
+    // Determine visibility and animation classes
+    const shouldBeAlwaysVisible = !hoverOnly || isFlashing;
+    const shouldShowOnHover = hoverOnly && !isFlashing;
+    
+    const baseClasses = `absolute flex items-center cursor-pointer ${SIZER[size]}`;
+    const visibilityClasses = shouldBeAlwaysVisible 
+        ? 'opacity-100' 
+        : 'opacity-0 group-hover:opacity-100';
+    const hoverEffects = shouldShowOnHover 
+        ? 'group-hover:-translate-y-2 group-hover:scale-110 transition duration-300' 
+        : '';
+
     return (
         <>
-            <div className={`absolute flex items-center cursor-pointer ${SIZER[size]} ${hoverOnly && !isFlashing ? 'group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-120 transition duration-300 opacity-0' : ''}`}>
+            <div className={`${baseClasses} ${visibilityClasses} ${hoverEffects}`}>
                 {[...Array(animatingHeart?.direction === 'emptying' ? player.health + 1 : player.health)].map((_, i) => (
                     <FancyHeart
                         key={`heart-${i}`}
