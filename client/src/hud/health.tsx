@@ -48,7 +48,7 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
 
     return (
         <>
-            <div className={`absolute flex cursor ${SIZER[size]} ${hoverOnly && !isFlashing ? 'group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-120 transition duration-300 opacity-0' : ''}`}>
+            <div className={`absolute flex items-center cursor-pointer ${SIZER[size]} ${hoverOnly && !isFlashing ? 'group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-120 transition duration-300 opacity-0' : ''}`}>
                 {[...Array(animatingHeart?.direction === 'emptying' ? player.health + 1 : player.health)].map((_, i) => (
                     <FancyHeart
                         key={`heart-${i}`}
