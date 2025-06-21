@@ -3,18 +3,10 @@ const SIZER = {
     big: "h-8 w-8"
 }
 
-export function FancyHeart({ isAnimating, direction, size, onAnimationComplete, style }: { isAnimating: boolean, direction: 'filling' | 'emptying', size: 'smol' | 'big', onAnimationComplete: () => void, style?: React.CSSProperties }) {
-    
-    const animationClass = isAnimating 
-        ? direction === 'filling' 
-            ? 'animate-heart-fill' 
-            : 'animate-heart-empty'
-        : '';
-
+export function FancyHeart({ size, style }: { size: 'smol' | 'big', style?: React.CSSProperties }) {
     return (
         <div 
-            className={`${SIZER[size]} ${animationClass}`}
-            onAnimationEnd={onAnimationComplete}
+            className={SIZER[size]}
             style={style}
         >
             <img src="/hearts/4-4.svg" alt="fancy-heart" className="w-full h-full object-contain" />

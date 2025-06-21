@@ -12,19 +12,15 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
     const prevHealth = useRef(player.health);
 
     useEffect(() => {
-        const currentHealth = player.health;
-        const previousHealth = prevHealth.current;
-
-        if (currentHealth !== previousHealth) {
-            // Trigger view transition if supported
+        if (player.health !== prevHealth.current) {
             if (document.startViewTransition) {
                 document.startViewTransition(() => {
-                    prevHealth.current = currentHealth;
+                    prevHealth.current = player.health;
                 });
             } else {
-                prevHealth.current = currentHealth;
+                prevHealth.current = player.health;
             }
-            
+
             // Flash effect
             setIsFlashing(true);
             setTimeout(() => setIsFlashing(false), 2000);
@@ -34,13 +30,13 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
     // Determine visibility classes
     const shouldBeVisible = !hoverOnly || isFlashing;
     const shouldShowOnHover = hoverOnly && !isFlashing;
-    
+
     const baseClasses = `absolute flex items-center cursor-pointer ${SIZER[size]}`;
-    const visibilityClasses = shouldBeVisible 
-        ? 'opacity-100' 
+    const visibilityClasses = shouldBeVisible
+        ? 'opacity-100'
         : 'opacity-0 group-hover:opacity-100';
-    const hoverEffects = shouldShowOnHover 
-        ? 'group-hover:-translate-y-2 group-hover:scale-110 transition duration-300' 
+    const hoverEffects = shouldShowOnHover
+        ? 'group-hover:-translate-y-2 group-hover:scale-110 transition duration-300'
         : '';
     const flashEffect = isFlashing ? 'animate-pulse' : '';
 
@@ -50,9 +46,6 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
                 <FancyHeart
                     key={`heart-${i}`}
                     size={size}
-                    isAnimating={false}
-                    direction="filling"
-                    onAnimationComplete={() => {}}
                     style={{ viewTransitionName: `heart-${player.id}-${i}` }}
                 />
             ))}
