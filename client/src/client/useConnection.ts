@@ -14,8 +14,8 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
         case "start": {
           const playerId = payload.shift()!;
           const peerIds = payload.shift()!.split(",");
-          const startAt = Date.parse(payload.shift()!);
-          // TODO: try to use performance instead for precision/clock sync
+          const startAt = parseInt(payload.shift()!);
+
           dispatch({
             type: "RECEIVED_START",
             payload: { playerId, peerIds, startAt },
@@ -38,12 +38,11 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
     [dispatch]
   );
 
-  return useRawConnection(onMessage);
+  const [connected, send] = useRawConnection(onMessage);
+  return { connected, send };
 };
 
-const useRawConnection = (
-  onMessage: (data: string) => void
-): [boolean, WebSocket["send"]] => {
+const useRawConnection = (onMessage: (data: string) => void) => {
   let ws = React.useRef(null as WebSocket | null);
 
   const [connected, setConnected] = React.useState(false);
@@ -78,10 +77,11 @@ const useRawConnection = (
   if (!connected) {
     return [
       connected,
-      (data) => console.error("not connected! send is fallthrough", data),
-    ];
+      (data: string) =>
+        console.error("not connected! send is fallthrough", data),
+    ] as const;
   }
-  return [connected, (data) => ws.current!.send(data)];
+  return [connected, (data: string) => ws.current!.send(data)] as const;
 };
 
 export default useConnection;

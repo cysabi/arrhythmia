@@ -1,108 +1,88 @@
-import { useCallback, useEffect, useMemo, type ActionDispatch } from "react";
-import type { ClientEvent, ClientState } from "./useGameState";
+import { useRef, useEffect, type ActionDispatch, useCallback } from "react";
+import type { ClientEvent } from "./useGameState";
+import * as Tone from "tone";
+import type { TransportClass } from "tone/build/esm/core/clock/Transport";
 
-import clap from "../sounds/clap.wav";
-
-const useConductor = (
-  state: ClientState,
-  dispatch: ActionDispatch<[client: ClientEvent]>
-) => {
-  // cache fn that takes stuff from beatmanager to figure out beat + offset
-  // beat, ms, audio content, beat
-
-  const beatManager = useMemo(() => {
-    const beatManager = new BeatManager();
-    beatManager.onBeat(() => {
-      dispatch({
-        type: "TICK",
-      });
-    });
-    beatManager
-      .loadAudio()
-      .then(() => console.log({ beatManager: "Loaded song buffer." }));
-    return beatManager;
-  }, []);
-
-  useEffect(() => {
-    if (!state.startAt) {
-      return;
-    }
-    const timeout = beatManager.startAt(new Date(state.startAt)); // sync start of game for everyone
-
-    return () => {
-      clearTimeout(timeout);
-      beatManager.stop();
-    };
-  }, [state.startAt]);
-
-  const getBeat = useCallback(() => {
-    if (state.startAt === null) {
-      return { beat: null, offset: null };
-    }
-    const beatFloat =
-      (new Date().valueOf() - state.startAt) / beatManager.msPerBeat;
-    const beat = Math.round(beatFloat);
-    const offset = beatFloat - beat; // the offBy unit is in beats!!
-
-    return { beat, offset };
-  }, [state.startAt, beatManager]);
-
-  return getBeat;
+const track1 = {
+  bpm: 152,
+  offset: 0.5,
+  volume: -20,
+  song: "/song.wav",
+  loopPoints: ["3m", "109m"] as const,
 };
 
-export class BeatManager {
-  interval: number | null;
-  msPerBeat: number;
-  audioContext: AudioContext;
-  beatBuffer: AudioBuffer | null;
+const useConductor = (
+  startAt: number | null,
+  dispatch: ActionDispatch<[client: ClientEvent]>
+) => {
+  const transport = useTransport(startAt, dispatch);
 
-  beatCallback = () => {};
+  const getBeat = useCallback(() => {
+    const spb = 60 / transport.current!.bpm.value;
+    const beatFloat = transport.current.seconds / spb - track1.offset;
 
-  constructor() {
-    this.interval = null;
-    this.msPerBeat = 2000;
-    this.audioContext = new AudioContext();
-    this.beatBuffer = null;
-  }
+    const beat = Math.round(beatFloat);
+    const offset = beatFloat - beat;
 
-  async loadAudio() {
-    const result = await fetch(clap);
-    const arrayBuffer = await result.arrayBuffer();
-    this.beatBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-  }
+    return { beat, offset };
+  }, [startAt]);
 
-  startAt(at: Date) {
-    return setTimeout(() => {
-      // TODO: start music playback here!
-      this.interval = setInterval(() => {
-        this.beat();
-      }, this.msPerBeat);
-    }, at.getMilliseconds() - new Date().getMilliseconds());
-  }
-
-  stop() {
-    // TODO: stop music playback here!
-    if (this.interval) clearInterval(this.interval);
-    this.interval = null;
-  }
-
-  onBeat(cb: () => void) {
-    this.beatCallback = cb;
-  }
-
-  private beat() {
-    const source = this.audioContext.createBufferSource();
-
-    if (this.beatBuffer) {
-      source.buffer = this.beatBuffer;
-      source.connect(this.audioContext.destination);
-      source.start();
-    } else {
-      console.warn({ beatManager: "Beat buffer not initialized" });
+  if (startAt) {
+    if (transport.current.state === "started") {
+      return { status: "playing", getBeat } as const;
     }
-
-    this.beatCallback && this.beatCallback();
+    return { status: "scheduled" } as const;
   }
-}
+  return { status: "idle" } as const;
+};
+
+const useTransport = (
+  startAt: number | null,
+  dispatch: ActionDispatch<[client: ClientEvent]>
+) => {
+  const transport = useRef<TransportClass>(null as any);
+  const players = useRef<Tone.Players>(null as any);
+  if (transport.current === null) {
+    transport.current = Tone.getTransport();
+    transport.current.bpm.value = track1.bpm;
+  }
+  if (players.current === null)
+    players.current = new Tone.Players({
+      song: track1.song,
+      clap: "/clap.wav",
+    }).toDestination();
+
+  useEffect(() => {
+    if (!startAt) return;
+    transport.current.seconds = 0;
+
+    // clap
+    transport.current.scheduleRepeat((time) => {
+      players.current.player("clap").start(time);
+      dispatch({ type: "TICK" });
+    }, "4n");
+
+    // song
+    transport.current.schedule((time) => {
+      players.current.player("song").loop = true;
+      players.current.player("song").volume.value = track1.volume;
+      players.current.player("song").setLoopPoints(...track1.loopPoints);
+      players.current.player("song").start(time, 0);
+    }, `+${track1.offset}n`);
+
+    console.log({ startAt });
+    transport.current.start(`+${(startAt - now()) / 1000}`);
+
+    return function cleanup() {
+      if (transport.current.state === "started") {
+        transport.current.stop();
+      }
+    };
+  }, [startAt]);
+
+  return transport;
+};
+
+const now = () => performance.timeOrigin + performance.now();
 
 export default useConductor;

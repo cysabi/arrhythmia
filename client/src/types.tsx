@@ -18,7 +18,7 @@ export type GameState = {
   turnCount: number;
 };
 
-export type Entity = Player | Projectile;
+export type Entity = Player | Projectile | Wall;
 export type Player = {
   type: "player";
   id: ID;
@@ -37,6 +37,7 @@ export type Projectile = {
 export type Wall = {
   type: "wall";
   position: Position;
+  id: ID;
 };
 
 // alias

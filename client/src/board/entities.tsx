@@ -13,3 +13,7 @@ export const Projectile = () => {
 export const Skull = () => {
   return <img src="/skull.svg" alt="skull" />;
 };
+
+export const Wall = () => {
+  return <img src="/floor.svg" alt="wall" />;
+};

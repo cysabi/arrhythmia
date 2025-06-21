@@ -4,16 +4,16 @@ import { StartScreen } from "./views/startScreen";
 import { Hud } from "./hud/hud";
 
 function App() {
-  const [connected, started, send, view] = useClient();
+  const [ws, conductor, view] = useClient();
 
-  if (!connected) {
+  if (!ws.connected) {
     return "connecting...";
   }
 
-  if (started !== true) {
+  if (conductor.status !== "playing") {
     return (
       <div className="flex items-center gap-5">
-        <StartScreen send={send} />
+        <StartScreen status={conductor.status} send={ws.send} />
       </div>
     );
   }
