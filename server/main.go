@@ -1,9 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/olahol/melody"
@@ -27,7 +27,13 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 	}
 
 	for _, session := range sessions {
-		pid := session.MustGet("pid").(PlayerId)
+		got, exists := session.Get("pid")
+		pid := got.(PlayerId)
+
+		if !exists {
+			continue
+		}
+
 		if !g.actedThisBeat[pid] {
 			skipPayload := PayloadAction{
 				pid:       pid,
@@ -37,22 +43,6 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 			m.Broadcast([]byte(skipPayload))
 		}
 	}
-}
-
-func GetOthers(m *melody.Melody, you PlayerId) string {
-	sessions, err := m.Sessions()
-	if err != nil {
-		panic(err)
-	}
-
-	pids := []string{}
-	for _, s := range sessions {
-		pid := s.MustGet("pid").(PlayerId)
-		if pid != you {
-			pids = append(pids, string(pid))
-		}
-	}
-	return strings.Join(pids, ",")
 }
 
 func main() {
@@ -67,6 +57,10 @@ func main() {
 	// m.HandleDisconnect(func(s *melody.Session) {
 	//
 	// })
+
+	m.HandleConnect(func(s *melody.Session) {
+
+	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
 		//
@@ -113,9 +107,8 @@ func main() {
 			}
 
 			// set when/them
-			now := time.Now()
-			futureTime := now.Add(2 * time.Second)
-			payload.when = futureTime.Format("2006-01-02T15:04:05Z07:00")
+			payload.when = fmt.Sprintf("%d",
+				time.Now().Add(4*time.Second).UnixMilli())
 			payload.them = pids
 
 			// write with you

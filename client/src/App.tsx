@@ -3,17 +3,22 @@ import Board from "./board";
 import MovingBars from "./board/MovingBars";
 import { StartScreen } from "./views/startScreen";
 
+<<<<<<< HEAD
 export default function App() {
   const [connected, started, send, view] = useClient();
+=======
+function App() {
+  const [ws, conductor, view] = useClient();
+>>>>>>> origin/main
 
-  if (!connected) {
+  if (!ws.connected) {
     return "connecting...";
   }
 
-  if (started !== true) {
+  if (conductor.status !== "playing") {
     return (
       <div className="flex items-center gap-5">
-        <StartScreen send={send} />
+        <StartScreen status={conductor.status} send={ws.send} />
       </div>
     );
   }

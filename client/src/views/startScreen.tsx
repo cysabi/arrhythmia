@@ -2,7 +2,13 @@ import { useState, useEffect } from "react";
 import { Player1, Player2, Skull } from "../board/entities";
 import styles from "./views.module.css";
 
-export const StartScreen = ({ send }: { send: WebSocket["send"] }) => {
+export const StartScreen = ({
+  status,
+  send,
+}: {
+  status: "scheduled" | "idle";
+  send: WebSocket["send"];
+}) => {
   const [playerVisible, setPlayerVisible] = useState(true);
 
   useEffect(() => {
@@ -41,8 +47,12 @@ export const StartScreen = ({ send }: { send: WebSocket["send"] }) => {
           )}
         </div>
         <div className={styles.Title}>BEATDOWN</div>
-        <button className={styles.Button} onClick={() => send("start")}>
-          START
+        <button
+          className={styles.Button}
+          onClick={() => send("start")}
+          disabled={status === "scheduled"}
+        >
+          {status === "idle" ? "START" : "READY..."}
         </button>
       </div>
     </div>
