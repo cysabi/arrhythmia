@@ -3,13 +3,8 @@ import Board from "./board";
 import MovingBars from "./board/MovingBars";
 import { StartScreen } from "./views/startScreen";
 
-<<<<<<< HEAD
-export default function App() {
-  const [connected, started, send, view] = useClient();
-=======
 function App() {
   const [ws, conductor, view] = useClient();
->>>>>>> origin/main
 
   if (!ws.connected) {
     return "connecting...";
@@ -32,3 +27,5 @@ function App() {
     </div>
   );
 }
+
+export default App;
