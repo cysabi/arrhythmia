@@ -4,24 +4,48 @@ import type {
   Entity,
   Position,
   Direction,
+  Wall,
+  ID,
 } from "../types";
+import {
+  DEFAULT_HEALTH,
+  DEFAULT_PLAYER_POSITIONS,
+  WALL_HEIGHT,
+  WALL_WIDTH,
+  WALL_POSITIONS,
+} from "./gameDefaults";
 
 let projectileId = 0;
-const defaultHealth = 5;
-const defaultPositions: [Position, Direction][] = [
-  [[2, 2], "right"],
-  [[18, 18], "left"],
-  [[2, 18], "right"],
-  [[18, 2], "left"],
-];
 
 const initialState: GameState = {
   map: {
-    height: 20,
-    width: 20,
+    height: WALL_HEIGHT,
+    width: WALL_WIDTH,
   },
   entities: [],
   turnCount: 0,
+};
+
+const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
+  return peerIds.map((pid, i) => {
+    const [position, facing] = DEFAULT_PLAYER_POSITIONS[i];
+    return {
+      type: "player",
+      id: pid,
+      position,
+      facing,
+      health: DEFAULT_HEALTH,
+      you: playerId === pid,
+    };
+  });
+};
+
+const getWallEntities = (wallPositions: [Position, ID][]) => {
+  let wallEntities: Wall[] = [];
+  wallPositions.forEach(([position, id]) =>
+    wallEntities.push({ type: "wall", position: position, id: id })
+  );
+  return wallEntities;
 };
 
 function isSamePosition(p1: Position, p2: Position): boolean {
@@ -31,21 +55,40 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  map: GameState["map"]
+  game: GameState
 ): Position {
+  const { map, entities } = game;
   let nextPosition: Position = [...currentPosition];
+  const wallPositions = entities
+    .filter((e) => e.type === "wall")
+    .map((e) => e.position);
+
+  const wontCollideWithWall = (x: number, y: number) => {
+    return (
+      wallPositions.filter(([wx, wy]) => wx === x && wy === y).length === 0
+    );
+  };
+
   switch (direction) {
     case "down":
-      nextPosition[1] += 1;
+      if (wontCollideWithWall(nextPosition[0], nextPosition[1] + 1)) {
+        nextPosition[1] += 1;
+      }
       break;
     case "up":
-      nextPosition[1] -= 1;
+      if (wontCollideWithWall(nextPosition[0], nextPosition[1] - 1)) {
+        nextPosition[1] -= 1;
+      }
       break;
     case "left":
-      nextPosition[0] -= 1;
+      if (wontCollideWithWall(nextPosition[0] - 1, nextPosition[1])) {
+        nextPosition[0] -= 1;
+      }
       break;
     case "right":
-      nextPosition[0] += 1;
+      if (wontCollideWithWall(nextPosition[0] + 1, nextPosition[1])) {
+        nextPosition[0] += 1;
+      }
       break;
   }
 
@@ -81,7 +124,11 @@ export function applyAction(
             type: "projectile",
             id: `${entity.id}-${projectileId++}`,
             owner: entity.id,
-            position: getNextPosition(entity.facing, entity.position, map),
+            position: getNextPosition(
+              entity.facing,
+              entity.position,
+              currentState
+            ),
             facing: entity.facing,
           });
           break;
@@ -96,7 +143,7 @@ export function applyAction(
           newEntities.push({
             ...entity,
             facing: direction,
-            position: getNextPosition(direction, entity.position, map),
+            position: getNextPosition(direction, entity.position, currentState),
           });
 
           break;
@@ -117,13 +164,21 @@ function tick(game: GameState): GameState {
     return p[0] * map.width + p[1];
   }
 
+  // 0. add walls
+  entities
+    .filter((e) => e.type === "wall")
+    .forEach((wall) => {
+      const positionIdx = positionToIndex(wall.position);
+      positionsMap.set(positionIdx, wall);
+    });
+
   // 1. move projectiles and put in the map
   entities
     .filter((e) => e.type === "projectile")
     .forEach((projectile) => {
       const { facing, position } = projectile;
       // If projectile hits a boundary and cannot move, it must go away
-      const nextPosition = getNextPosition(facing, position, map);
+      const nextPosition = getNextPosition(facing, position, game);
       if (isSamePosition(nextPosition, position)) return;
 
       // Put projectile in hashmap, checking for projectile <=> projectile collisions
@@ -199,18 +254,13 @@ export function initGame(
 
   const { playerId, peerIds } = props;
 
+  const initialEntities = [
+    ...getDefaultPlayerEntities(playerId, peerIds),
+    ...getWallEntities(WALL_POSITIONS),
+  ];
+
   return {
     ...game,
-    entities: peerIds.map((pid, i) => {
-      const [position, facing] = defaultPositions[i];
-      return {
-        type: "player",
-        id: pid,
-        position,
-        facing,
-        health: defaultHealth,
-        you: playerId === pid,
-      };
-    }),
+    entities: initialEntities,
   };
 }
