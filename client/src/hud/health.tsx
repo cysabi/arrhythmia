@@ -10,6 +10,8 @@ const SIZER = {
 }
 
 export function Health({ player, size, hoverOnly = false }: { player: Player, size: 'smol' | 'big', hoverOnly: boolean }) {
+    const [isFlashing, setIsFlashing] = useState(false);
+
     const prevHealth = useRef(player.health);
     const [animatingHeart, setAnimatingHeart] = useState<{
         index: number;
@@ -21,17 +23,21 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
         const previousHealth = prevHealth.current;
 
         if (currentHealth !== previousHealth) {
-            if (currentHealth > previousHealth) {
-                setAnimatingHeart({
-                    index: currentHealth - 1,
-                    direction: 'filling'
-                });
-            } else {
-                setAnimatingHeart({
-                    index: previousHealth - 1,
-                    direction: 'emptying'
-                });
-            }
+            setIsFlashing(true);
+            setTimeout(() => setIsFlashing(false), 2000);
+            setTimeout(() => {
+                if (currentHealth > previousHealth) {
+                    setAnimatingHeart({
+                        index: currentHealth - 1,
+                        direction: 'filling'
+                    });
+                } else {
+                    setAnimatingHeart({
+                        index: previousHealth - 1,
+                        direction: 'emptying'
+                    });
+                }
+            }, 50);
             prevHealth.current = currentHealth;
         }
     }, [player.health]);
@@ -42,7 +48,7 @@ export function Health({ player, size, hoverOnly = false }: { player: Player, si
 
     return (
         <>
-            <div className={`absolute flex cursor ${SIZER[size]} ${hoverOnly ? 'group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-120 transition duration-300 opacity-0' : ''}`}>
+            <div className={`absolute flex cursor ${SIZER[size]} ${hoverOnly && !isFlashing ? 'group-hover:opacity-100 group-hover:-translate-y-2 group-hover:scale-120 transition duration-300 opacity-0' : ''}`}>
                 {[...Array(animatingHeart?.direction === 'emptying' ? player.health + 1 : player.health)].map((_, i) => (
                     <FancyHeart
                         key={`heart-${i}`}

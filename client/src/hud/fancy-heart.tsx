@@ -5,7 +5,7 @@ const SIZER = {
 }
 
 export function FancyHeart({ isAnimating, direction, size, onAnimationComplete }: { isAnimating: boolean, direction: 'filling' | 'emptying', size: 'smol' | 'big', onAnimationComplete: () => void }) {
-    const [currentFrame, setCurrentFrame] = useState(direction === 'filling' ? 1 : 4);
+    const [currentFrame, setCurrentFrame] = useState(4);
 
     useEffect(() => {
         if (!isAnimating) return;
@@ -18,15 +18,12 @@ export function FancyHeart({ isAnimating, direction, size, onAnimationComplete }
             frameIndex++;
             if (frameIndex >= frames.length) {
                 clearInterval(interval);
-                if (frameIndex >= frames.length) {
-                    clearInterval(interval);
-                    onAnimationComplete?.(); // Call the callback
-                }
+                onAnimationComplete?.();
             }
         }, 100);
 
         return () => clearInterval(interval);
-    }, [isAnimating, direction, onAnimationComplete]);
+    }, [isAnimating, direction]);
 
 
     return (
