@@ -49,7 +49,7 @@ const useRawConnection = (
   const [connected, setConnected] = React.useState(false);
 
   React.useEffect(() => {
-    ws.current = new WebSocket("ws://localhost:5174/ws");
+    ws.current = new WebSocket("ws://localhost:5199/ws");
 
     ws.current.addEventListener("open", () => {
       console.debug({ ws: "open" });

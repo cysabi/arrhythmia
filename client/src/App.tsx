@@ -13,8 +13,7 @@ function App() {
   if (started !== true) {
     return (
       <div className="flex items-center gap-5">
-        <StartScreen />
-        <button onClick={() => send("start")}>start!</button>
+        <StartScreen send={send} />
       </div>
     );
   }
