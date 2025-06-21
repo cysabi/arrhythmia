@@ -1,26 +1,20 @@
-import { act, useEffect, useRef, type ActionDispatch } from "react";
+import { useEffect, useRef, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
 import type { Action } from "../types";
 
 const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  getBeat: () =>
-    | { beat: number; offset: number }
-    | { beat: null; offset: null },
-  send: WebSocket["send"]
+  send: WebSocket["send"],
+  getBeat?: () => { beat: number; offset: number }
 ) => {
   const actRef = useRef<(a: Action) => void | null>(null);
 
   actRef.current = (actionInput: Action) => {
+    if (!getBeat) return; // song hasn't started yet
     const { beat, offset } = getBeat();
 
     console.log({ act: { beat, offset } });
-
-    // song hasn't started yet
-    if (beat === null) {
-      return;
-    }
 
     // if player has already moved for beat that theyre trying to move for
     if (
@@ -34,14 +28,16 @@ const useInput = (
     }
 
     // TODO: give error feedback -- off timing!
-    const action = Math.abs(offset) > 0.25 ? "skip" : actionInput; // you are too offbeat >:(
+    const action = Math.abs(offset) > 0.2 ? "skip" : actionInput; // you are too offbeat >:(
     const payload = {
       action,
       turnCount: beat,
       playerId: state.playerId,
     };
 
+    console.log("hang?");
     dispatch({ type: "INPUT", payload });
+    console.log("hang??");
     send(["action", payload.turnCount, payload.action].join(";"));
   };
 

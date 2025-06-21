@@ -16,11 +16,13 @@ const useClient = () => {
   // FIXME: Projectiles are not moving every turn incmrement (they should move even if all players do not)
   const [state, dispatch] = useGameState();
 
-  const [connected, send] = useConnection(dispatch);
+  console.log("rerender!!");
 
-  const getBeat = useConductor(state, dispatch);
+  const ws = useConnection(dispatch);
 
-  useInput(state, dispatch, getBeat, send);
+  const conductor = useConductor(state.startAt, dispatch);
+
+  useInput(state, dispatch, ws.send, conductor.getBeat);
 
   const view = useMemo(() => {
     return progressGame(
@@ -30,6 +32,6 @@ const useClient = () => {
     );
   }, [state]);
 
-  return [connected, state.startAt !== null, send, view] as const;
+  return [ws, conductor, view] as const;
 };
 export default useClient;

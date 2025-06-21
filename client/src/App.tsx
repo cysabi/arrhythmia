@@ -3,16 +3,16 @@ import Board from "./board";
 import { StartScreen } from "./views/startScreen";
 
 function App() {
-  const [connected, started, send, view] = useClient();
+  const [ws, conductor, view] = useClient();
 
-  if (!connected) {
+  if (!ws.connected) {
     return "connecting...";
   }
 
-  if (started !== true) {
+  if (conductor.status !== "playing") {
     return (
       <div className="flex items-center gap-5">
-        <StartScreen send={send} />
+        <StartScreen status={conductor.status} send={ws.send} />
       </div>
     );
   }
