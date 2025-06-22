@@ -13,8 +13,11 @@ const Entity = ({ entity }: { entity: Entity }) => {
         gridRow: y,
       }}
     >
-      {entity.type === "player" &&
-        <PlayerWrapper player={entity}>{(parseFloat(entity.id.split("_")[1]) % 2 ? <Player1 /> : <Player2 />)}</PlayerWrapper>}
+      {entity.type === "player" && (
+        <PlayerWrapper player={entity}>
+          {parseFloat(entity.id.split("_")[1]) % 2 ? <Player1 /> : <Player2 />}
+        </PlayerWrapper>
+      )}
       {entity.type === "projectile" && <Projectile />}
       {entity.type === "wall" && <Wall />}
     </div>
@@ -27,10 +30,12 @@ const Board = ({ gameState }: { gameState: GameState }) => {
       <div
         className="grid max-h-full max-w-full aspect-square"
         style={{
-          gridTemplateColumns: `repeat(${gameState.map.width}, ${100 / gameState.map.width
-            }%)`,
-          gridTemplateRows: `repeat(${gameState.map.height}, ${100 / gameState.map.height
-            }%)`,
+          gridTemplateColumns: `repeat(${gameState.map.width}, ${
+            100 / gameState.map.width
+          }%)`,
+          gridTemplateRows: `repeat(${gameState.map.height}, ${
+            100 / gameState.map.height
+          }%)`,
         }}
       >
         {gameState.entities.map((entity) => (
