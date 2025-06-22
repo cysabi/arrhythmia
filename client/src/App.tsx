@@ -1,6 +1,6 @@
 import useClient from "./client/useClient";
 import Board from "./board";
-import MovingBars from "./board/MovingBars";
+import BeatBarSpawner from "./board/BeatBarSpawner";
 import { StartScreen } from "./views/startScreen";
 import { Hud } from "./hud/hud";
 
@@ -24,7 +24,7 @@ function App() {
         <Board gameState={view} />
         <Hud devFlag={false} gameState={view} />
       </div>
-      {/* <MovingBars duration={2} /> */}
+      <BeatBarSpawner />
     </div>
   );
 }
