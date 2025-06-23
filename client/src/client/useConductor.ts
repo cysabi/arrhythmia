@@ -13,7 +13,7 @@ const track1 = {
 
 const useConductor = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>
+  dispatch: ActionDispatch<[client: ClientEvent]>,
 ) => {
   const transport = useTransport(startAt, dispatch);
 
@@ -38,7 +38,7 @@ const useConductor = (
 
 const useTransport = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>
+  dispatch: ActionDispatch<[client: ClientEvent]>,
 ) => {
   const transport = useRef<TransportClass>(null as any);
   const players = useRef<Tone.Players>(null as any);
@@ -70,12 +70,11 @@ const useTransport = (
       players.current.player("song").start(time, 0);
     }, `+${track1.offset}n`);
 
-    console.log({ startAt });
     transport.current.start(`+${(startAt - now()) / 1000}`);
 
     return function cleanup() {
       if (transport.current.state === "started") {
-        transport.current.stop();
+        transport.current.cancel();
       }
     };
   }, [startAt]);
