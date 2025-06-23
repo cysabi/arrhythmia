@@ -1,32 +1,15 @@
-import { PlayerWrapper } from "../hud/player-wrapper";
-import type { Entity, GameState } from "../types";
-import { Projectile, Wall, getAvatar } from "./entities";
+import type { GameState } from "../types";
+import { Player, Projectile, Wall } from "./entities";
 
-const Entity = ({ entity }: { entity: Entity }) => {
-  const x = entity.position[0];
-  const y = entity.position[1];
+const Board = ({
+  gameState,
+  tooltipData,
+}: {
+  gameState: GameState;
+  tooltipData: { playerId: string; feedback: string };
+}) => {
   return (
-    <div
-      key={entity.type + "_" + x + y}
-      style={{
-        gridColumn: x,
-        gridRow: y,
-      }}
-    >
-      {entity.type === "player" && (
-        <PlayerWrapper player={entity}>
-          {getAvatar(entity.avatarId)}
-        </PlayerWrapper>
-      )}
-      {entity.type === "projectile" && <Projectile />}
-      {entity.type === "wall" && <Wall />}
-    </div>
-  );
-};
-
-const Board = ({ gameState }: { gameState: GameState }) => {
-  return (
-    <div className="flex items-center justify-center h-full max-h-screen max-w-screen p-24">
+    <div className="flex items-center justify-center h-full max-h-screen max-w-screen p-2">
       <div
         className="grid max-h-full max-w-full aspect-square"
         style={{
@@ -39,7 +22,25 @@ const Board = ({ gameState }: { gameState: GameState }) => {
         }}
       >
         {gameState.entities.map((entity) => (
-          <Entity key={entity.id} entity={entity} />
+          <div
+            key={
+              entity.type +
+              "_" +
+              entity.id +
+              entity.position[0] +
+              entity.position[1]
+            }
+            style={{
+              gridColumn: entity.position[0],
+              gridRow: entity.position[1],
+            }}
+          >
+            {entity.type === "player" && (
+              <Player entity={entity} tooltipData={tooltipData} />
+            )}
+            {entity.type === "projectile" && <Projectile entity={entity} />}
+            {entity.type === "wall" && <Wall />}
+          </div>
         ))}
       </div>
     </div>

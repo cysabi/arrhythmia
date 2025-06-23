@@ -18,10 +18,18 @@ const useClient = () => {
     return progressGame(
       state.snapshot,
       [...state.validated, ...state.optimistic],
-      state.turnCount,
+      state.turnCount
     );
   }, [state]);
 
-  return [ws, conductor, view] as const;
+  const tooltipData = useMemo(
+    () => ({
+      playerId: state.playerId,
+      feedback: state.feedback,
+    }),
+    [state.playerId, state.feedback]
+  );
+
+  return { ws, conductor, view, tooltipData } as const;
 };
 export default useClient;

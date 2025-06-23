@@ -6,14 +6,14 @@ import type { TransportClass } from "tone/build/esm/core/clock/Transport";
 const track1 = {
   bpm: 152,
   offset: 0.5,
-  volume: -20,
+  volume: -10,
   song: "/song.wav",
   loopPoints: ["3m", "109m"] as const,
 };
 
 const useConductor = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   const transport = useTransport(startAt, dispatch);
 
@@ -38,7 +38,7 @@ const useConductor = (
 
 const useTransport = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   const transport = useRef<TransportClass>(null as any);
   const players = useRef<Tone.Players>(null as any);

@@ -5,6 +5,7 @@ import { progressGame, initGame } from "./engine";
 const useGameState = () => {
   return useReducer(reducer, {
     playerId: "",
+    feedback: "",
     turnCount: 0,
     snapshot: initGame(),
     validated: [],
@@ -39,6 +40,10 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       return { ...state, optimistic };
     }
 
+    case "FEEDBACK": {
+      return { ...state, feedback: event.payload };
+    }
+
     case "TICK": {
       return { ...state, turnCount: state.turnCount + 1 };
     }
@@ -52,7 +57,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount,
+      snapshotTurnCount
     );
     state.validated = [];
   }
@@ -75,6 +80,7 @@ const updateValidated = (state: ClientState, payload: ActionPayload) => {
 export interface ClientState {
   playerId: string;
   turnCount: number;
+  feedback: string;
   snapshot: GameState;
   validated: ActionPayload[];
   optimistic: ActionPayload[];
@@ -84,6 +90,7 @@ export interface ClientState {
 export type ClientEvent =
   | { type: "RECEIVED_ACTION"; payload: ActionPayload }
   | { type: "INPUT"; payload: ActionPayload }
+  | { type: "FEEDBACK"; payload: string }
   | { type: "TICK" }
   | {
       type: "RECEIVED_START";

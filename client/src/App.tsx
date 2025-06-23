@@ -15,7 +15,7 @@ const getWinner = (view: GameState): Player | null => {
 };
 
 function App() {
-  const [ws, conductor, view] = useClient();
+  const { ws, conductor, view, tooltipData } = useClient();
 
   if (!ws.connected) {
     return "connecting...";
@@ -37,7 +37,7 @@ function App() {
   return (
     <div className="h-svh w-svw flex flex-col">
       <div className="flex-grow">
-        <Board gameState={view} />
+        <Board gameState={view} tooltipData={tooltipData} />
         <Hud devFlag={false} gameState={view} />
       </div>
       <BeatBarSpawner />

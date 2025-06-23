@@ -6,35 +6,39 @@ const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
   send: WebSocket["send"],
-  getBeat?: () => { beat: number; offset: number },
+  getBeat?: () => { beat: number; offset: number }
 ) => {
   const actRef = useRef<(a: Action, p?: ProjectileType) => void | null>(null);
 
-  actRef.current = (actionInput: Action, projectileType?: ProjectileType) => {
+  actRef.current = (action: Action, projectileType?: ProjectileType) => {
     if (!getBeat) return; // song hasn't started yet
     const { beat, offset } = getBeat();
 
     // if player has already moved for beat that theyre trying to move for
     if (
       [...state.optimistic, ...state.validated].find(
-        (p) => p.turnCount === beat,
+        (p) => p.turnCount === beat
       )
     ) {
-      // TODO: give error feedback -- already moved!
-      return console.log({ act: "already moved!" });
+      return dispatch({ type: "FEEDBACK", payload: "already moved!" });
     }
 
-    let action = actionInput;
-    if (Math.abs(offset) > 0.225) {
-      // TODO: give error feedback -- off timing!
-      return console.log({ act: "you are too offbeat!" });
-    }
     const payload = {
       action,
       turnCount: beat,
       playerId: state.playerId,
       projectileType,
     };
+    if (Math.abs(offset) > 0.225) {
+      payload.action = "skip";
+      console.log({ offset });
+      dispatch({
+        type: "FEEDBACK",
+        payload: offset > 0 ? "too late!" : "too early!",
+      });
+    } else {
+      dispatch({ type: "FEEDBACK", payload: "" });
+    }
 
     dispatch({ type: "INPUT", payload });
     send(
@@ -43,7 +47,7 @@ const useInput = (
         payload.turnCount,
         payload.action,
         payload.projectileType,
-      ].join(";"),
+      ].join(";")
     );
   };
 

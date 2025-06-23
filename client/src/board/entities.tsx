@@ -1,14 +1,41 @@
-import type { Player } from "../types";
+import { Health } from "../hud/health";
+import type { Entity } from "../types";
 
-export const Player1 = () => {
-  return <img src="/binki.svg" alt="player1" />;
+export const Player = ({
+  entity,
+  tooltipData: { feedback, playerId },
+}: {
+  entity: Extract<Entity, { type: "player" }>;
+  tooltipData: { playerId: string; feedback: string };
+}) => {
+  const avatarId = assignAvatarId(entity.id);
+
+  return (
+    <div className="relative group cursor-pointer">
+      {entity.id === playerId && (
+        <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
+          <div
+            className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${
+              feedback.includes("already") && "text-orange-600"
+            } ${feedback.includes("early") && "text-cyan-600"} ${
+              feedback.includes("late") && "text-purple-600"
+            }`}
+          >
+            {feedback}
+          </div>
+        </div>
+      )}
+      <Health player={entity} size="smol" hoverOnly={true} />
+      {getAvatar(avatarId)}
+    </div>
+  );
 };
 
-export const Player2 = () => {
-  return <img src="/hemmet.svg" alt="player2" />;
-};
-
-export const Projectile = () => {
+export const Projectile = ({
+  entity,
+}: {
+  entity: Extract<Entity, { type: "projectile" }>;
+}) => {
   return <img src="/trash.jpg" alt="A projectile" />;
 };
 
@@ -20,15 +47,23 @@ export const Wall = () => {
   return <img src="/floor.svg" alt="wall" />;
 };
 
-export const getPlayerNumber = (playerId: Player["id"]): number => {
+export const getPlayerNumber = (
+  playerId: Extract<Entity, { type: "player" }>["id"]
+): number => {
   return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
 };
 
-export const assignAvatarId = (playerId: Player["id"]): number => {
+export const assignAvatarId = (
+  playerId: Extract<Entity, { type: "player" }>["id"]
+): number => {
   // assign one of 2 avatars
   return getPlayerNumber(playerId) % 2;
 };
 
 export const getAvatar = (avatarId: number) => {
-  return avatarId ? <Player1 /> : <Player2 />;
+  return avatarId ? (
+    <img src="/binki.svg" alt="player1" />
+  ) : (
+    <img src="/hemmet.svg" alt="player2" />
+  );
 };
