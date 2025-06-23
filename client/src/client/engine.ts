@@ -6,6 +6,7 @@ import type {
   Direction,
   Wall,
   ID,
+  Projectile,
 } from "../types";
 import {
   DEFAULT_HEALTH,
@@ -43,7 +44,7 @@ const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
 const getWallEntities = (wallPositions: [Position, ID][]) => {
   let wallEntities: Wall[] = [];
   wallPositions.forEach(([position, id]) =>
-    wallEntities.push({ type: "wall", position: position, id: id })
+    wallEntities.push({ type: "wall", position: position, id: id }),
   );
   return wallEntities;
 };
@@ -55,7 +56,8 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  game: GameState
+  game: GameState,
+  diagDir?: Direction,
 ): Position {
   const { map, entities } = game;
   let nextPosition: Position = [...currentPosition];
@@ -71,37 +73,52 @@ function getNextPosition(
 
   switch (direction) {
     case "down":
-      if (wontCollideWithWall(nextPosition[0], nextPosition[1] + 1)) {
-        nextPosition[1] += 1;
-      }
+      nextPosition[1] += 1;
       break;
     case "up":
-      if (wontCollideWithWall(nextPosition[0], nextPosition[1] - 1)) {
-        nextPosition[1] -= 1;
-      }
+      nextPosition[1] -= 1;
       break;
     case "left":
-      if (wontCollideWithWall(nextPosition[0] - 1, nextPosition[1])) {
-        nextPosition[0] -= 1;
-      }
+      nextPosition[0] -= 1;
       break;
     case "right":
-      if (wontCollideWithWall(nextPosition[0] + 1, nextPosition[1])) {
-        nextPosition[0] += 1;
-      }
+      nextPosition[0] += 1;
       break;
   }
 
-  // Enforce map boundary
-  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width - 1);
-  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height - 1);
+  switch (diagDir) {
+    case "down":
+      nextPosition[1] += 1;
+      break;
+    case "up":
+      nextPosition[1] -= 1;
+      break;
+    case "left":
+      nextPosition[0] -= 1;
+      break;
+    case "right":
+      nextPosition[0] += 1;
+      break;
+  }
 
-  return nextPosition;
+  if (
+    wontCollideWithWall(nextPosition[0], nextPosition[1]) &&
+    nextPosition[0] >= 0 &&
+    nextPosition[0] < map.width &&
+    nextPosition[1] >= 0 &&
+    nextPosition[1] < map.height
+  ) {
+    return nextPosition;
+  } else {
+    return [...currentPosition];
+  }
 }
+
+const orderedDirections: Direction[] = ["up", "right", "down", "left"];
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState
+  currentState: GameState,
 ): GameState {
   const { turnCount: turn, entities, map } = currentState;
 
@@ -120,17 +137,75 @@ export function applyAction(
           break;
         case "shoot":
           newEntities.push(entity);
-          newEntities.push({
+          const projectileType = action.projectileType;
+          const projectile = {
+            projectileType,
             type: "projectile",
             id: `${entity.id}-${projectileId++}`,
             owner: entity.id,
             position: getNextPosition(
               entity.facing,
               entity.position,
-              currentState
+              currentState,
             ),
             facing: entity.facing,
-          });
+            countdown: null,
+          } as Projectile;
+
+          if (projectileType === "cross_of_death") {
+            newEntities.push({ ...projectile, countdown: 3 });
+          } else if (projectileType === "basic") {
+            newEntities.push(projectile);
+          } else if (projectileType === "diag_cross") {
+            orderedDirections.forEach((facing, idx) => {
+              const diagFacing =
+                orderedDirections[(idx + 1) % orderedDirections.length];
+              const position = getNextPosition(
+                facing,
+                entity.position,
+                currentState,
+                diagFacing,
+              );
+
+              if (!isSamePosition(position, projectile.position)) {
+                newEntities.push({
+                  ...projectile,
+                  id: projectile.id + `-${idx + 1}`,
+                  position,
+                  facing,
+                  diagFacing,
+                });
+              }
+            });
+          } else if (projectileType === "spread") {
+            const dirIdx = orderedDirections.indexOf(projectile.facing);
+
+            newEntities.push({ ...projectile });
+
+            [dirIdx - 1, dirIdx + 1].forEach((dir, idx) => {
+              const diagFacing =
+                orderedDirections[
+                  // Add length to prevent negative number
+                  (orderedDirections.length + dir) % orderedDirections.length
+                ];
+              const position = getNextPosition(
+                projectile.facing,
+                entity.position,
+                currentState,
+                diagFacing,
+              );
+
+              if (!isSamePosition(position, projectile.position)) {
+                newEntities.push({
+                  ...projectile,
+                  id: projectile.id + `-${idx + 1}`,
+                  position,
+                  diagFacing,
+                });
+              }
+            });
+          }
+
           break;
         case "moveUp":
         case "moveDown":
@@ -172,23 +247,38 @@ function tick(game: GameState): GameState {
       positionsMap.set(positionIdx, wall);
     });
 
+  // TODO: cross-of-death
   // 1. move projectiles and put in the map
   entities
     .filter((e) => e.type === "projectile")
     .forEach((projectile) => {
-      const { facing, position } = projectile;
+      const { facing, position, diagFacing, countdown } = projectile;
       // If projectile hits a boundary and cannot move, it must go away
-      const nextPosition = getNextPosition(facing, position, game);
+      let nextPosition;
+      if (diagFacing) {
+        nextPosition = getNextPosition(facing, position, game, diagFacing);
+      } else {
+        nextPosition = getNextPosition(facing, position, game);
+      }
+
       if (isSamePosition(nextPosition, position)) return;
 
       // Put projectile in hashmap, checking for projectile <=> projectile collisions
       const positionIdx = positionToIndex(nextPosition);
+      if (countdown === 0) {
+        // TODO: explosion
+      }
       if (positionsMap.has(positionIdx)) {
-        // collision -- goodbye to both
-        positionsMap.delete(positionIdx);
+        if (countdown) {
+          // TODO: splosion
+        } else {
+          // collision -- goodbye to both
+          positionsMap.delete(positionIdx);
+        }
       } else {
         positionsMap.set(positionIdx, {
           ...projectile,
+          countdown: countdown ? countdown - 1 : null,
           position: nextPosition,
         });
       }
@@ -219,7 +309,7 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  desiredTurnCount: number
+  desiredTurnCount: number,
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
@@ -247,7 +337,7 @@ export function initGame(
         playerId: string;
         peerIds: string[];
       }
-    | undefined = undefined
+    | undefined = undefined,
 ): GameState {
   const game = structuredClone(initialState);
   if (props === undefined) return game;
