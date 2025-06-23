@@ -37,7 +37,7 @@ export const Projectile = ({
 }: {
   entity: Extract<Entity, { type: "projectile" }>;
 }) => {
-  return <img src="/trash.jpg" alt="A projectile" />;
+  return <img src="/fireballtail.svg" alt="A projectile" />;
 };
 
 export const Skull = () => {
