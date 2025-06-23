@@ -76,13 +76,13 @@ export const Wall = () => {
 };
 
 export const getPlayerNumber = (
-  playerId: Extract<Entity, { type: "player" }>["id"]
+  playerId: Extract<Entity, { type: "player" }>["id"],
 ): number => {
   return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
 };
 
 export const assignAvatarId = (
-  playerId: Extract<Entity, { type: "player" }>["id"]
+  playerId: Extract<Entity, { type: "player" }>["id"],
 ): number => {
   // assign one of 2 avatars
   return getPlayerNumber(playerId) % 2;

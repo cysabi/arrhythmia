@@ -9,7 +9,7 @@ import type { GameState, Player } from "./types";
 const getWinner = (view: GameState): Player | null => {
   const { entities } = view;
   const playersAlive: Player[] = entities.filter(
-    (e): e is Player => e.type === "player" && e.health > 0
+    (e): e is Player => e.type === "player" && e.health > 0,
   );
   return playersAlive.length === 1 ? playersAlive[0] : null;
 };

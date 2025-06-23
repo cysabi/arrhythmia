@@ -6,7 +6,7 @@ const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
   send: WebSocket["send"],
-  getBeat?: () => { beat: number; offset: number }
+  getBeat?: () => { beat: number; offset: number },
 ) => {
   const actRef = useRef<(a: Action, p?: ProjectileType) => void | null>(null);
 
@@ -17,7 +17,7 @@ const useInput = (
     // if player has already moved for beat that theyre trying to move for
     if (
       [...state.optimistic, ...state.validated].find(
-        (p) => p.turnCount === beat
+        (p) => p.turnCount === beat,
       )
     ) {
       return dispatch({ type: "FEEDBACK", payload: "already moved!" });
@@ -47,7 +47,7 @@ const useInput = (
         payload.turnCount,
         payload.action,
         payload.projectileType,
-      ].join(";")
+      ].join(";"),
     );
   };
 

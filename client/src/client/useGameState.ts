@@ -2,15 +2,19 @@ import { useReducer } from "react";
 import type { ActionPayload, GameState } from "../types";
 import { progressGame, initGame } from "./engine";
 
+const initialState = {
+  playerId: "",
+  feedback: "",
+  turnCount: 0,
+  snapshot: initGame(),
+  validated: [],
+  optimistic: [],
+  startAt: null,
+};
+
 const useGameState = () => {
   return useReducer(reducer, {
-    playerId: "",
-    feedback: "",
-    turnCount: 0,
-    snapshot: initGame(),
-    validated: [],
-    optimistic: [],
-    startAt: null,
+    ...initialState,
   } as ClientState);
 };
 
@@ -19,7 +23,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     case "RECEIVED_START": {
       const { playerId, peerIds, startAt } = event.payload;
       return {
-        ...state,
+        ...initialState,
         playerId,
         snapshot: initGame({ playerId, peerIds }),
         startAt,
@@ -57,7 +61,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount
+      snapshotTurnCount,
     );
     state.validated = [];
   }
