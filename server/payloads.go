@@ -57,7 +57,7 @@ func (p PayloadStart) Send() string {
 type PayloadAction struct {
 	pid       PlayerId
 	turnCount int
-	action    string
+	action    []string
 }
 
 func (PayloadAction) Receive(pid PlayerId, attr []string) Payload {
@@ -65,7 +65,7 @@ func (PayloadAction) Receive(pid PlayerId, attr []string) Payload {
 	if err != nil {
 		panic(err)
 	}
-	action := attr[1]
+	action := attr[1:]
 
 	return PayloadAction{
 		pid:       pid,
@@ -79,6 +79,6 @@ func (p PayloadAction) Send() string {
 		"action",
 		string(p.pid),
 		strconv.Itoa(p.turnCount),
-		p.action,
+		strings.Join(p.action, ";"),
 	}, ";")
 }

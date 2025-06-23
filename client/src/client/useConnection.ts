@@ -1,5 +1,5 @@
 import React, { useCallback, type ActionDispatch } from "react";
-import type { Action } from "../types";
+import type { Action, ProjectileType } from "../types";
 import type { ClientEvent } from "./useGameState";
 
 const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
@@ -27,15 +27,19 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
           const playerId = payload.shift()!;
           const turnCount = parseInt(payload.shift()!);
           const action = payload.shift()! as Action;
+          let projectileType;
+          if (payload.length > 0) {
+            projectileType = payload.shift() as ProjectileType;
+          }
           dispatch({
             type: "RECEIVED_ACTION",
-            payload: { playerId, turnCount, action },
+            payload: { playerId, turnCount, action, projectileType },
           });
           break;
         }
       }
     },
-    [dispatch]
+    [dispatch],
   );
 
   const [connected, send] = useRawConnection(onMessage);
