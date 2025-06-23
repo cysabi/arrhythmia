@@ -171,7 +171,7 @@ export function applyAction(
                 diagFacing,
               );
 
-              if (!isSamePosition(position, projectile.position)) {
+              if (!isSamePosition(position, entity.position)) {
                 newEntities.push({
                   ...projectile,
                   id: projectile.id + `-${idx + 1}`,
