@@ -13,7 +13,7 @@ const track1 = {
 
 const useConductor = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   const transport = useTransport(startAt, dispatch);
 
@@ -38,7 +38,7 @@ const useConductor = (
 
 const useTransport = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   const transport = useRef<TransportClass>(null as any);
   const players = useRef<Tone.Players>(null as any);

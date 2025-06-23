@@ -2,14 +2,12 @@ import type { PropsWithChildren } from "react";
 import { Health } from "./health";
 import type { Player } from "../types";
 
-export function PlayerWrapper({
-  player,
-  children,
-}: { player: Player } & PropsWithChildren) {
+const PlayerToast = () => {
   return (
-    <div className="relative group cursor-pointer">
-      <Health player={player} size="smol" hoverOnly={true} />
-      {children}
+    <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
+      <div className="text-sm whitespace-nowrap px-2 font-semibold text-yellow-800">
+        too early!
+      </div>
     </div>
   );
-}
+};
