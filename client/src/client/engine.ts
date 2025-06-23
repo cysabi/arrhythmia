@@ -14,6 +14,7 @@ import {
   WALL_HEIGHT,
   WALL_WIDTH,
   WALL_POSITIONS,
+  BOMB_TIME,
 } from "./gameDefaults";
 
 let projectileId = 0;
@@ -283,7 +284,7 @@ function tick(game: GameState): GameState {
       let nextPosition;
 
       if (projectileType === "bomb") {
-        if (turnCount - birthTurn > 3) {
+        if (turnCount - birthTurn > BOMB_TIME) {
           asplodeBomb(position, projectile);
         } else {
           nextPosition = [...position] as Position;
