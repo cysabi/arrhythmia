@@ -6,7 +6,7 @@ import type { TransportClass } from "tone/build/esm/core/clock/Transport";
 const track1 = {
   bpm: 152,
   offset: 0.5,
-  volume: -20,
+  volume: -10,
   song: "/song.wav",
   loopPoints: ["3m", "109m"] as const,
 };
