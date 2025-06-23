@@ -1,6 +1,6 @@
 import type { Position, Direction, ID } from "../types";
 
-export const BOMB_TIME = 4;
+export const BOMB_TIME = 5;
 export const WALL_WIDTH = 20;
 export const WALL_HEIGHT = 20;
 export const DEFAULT_HEALTH = 5;
