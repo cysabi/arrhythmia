@@ -36,7 +36,35 @@ export const Projectile = ({
 }: {
   entity: Extract<Entity, { type: "projectile" }>;
 }) => {
-  return <img src="/fireballtail.svg" alt="A projectile" />;
+  // TODO
+  // entity.facing
+  // entity.diagFacing
+  const dir = [entity.facing];
+  if (entity.diagFacing) dir.push(entity.diagFacing);
+  dir.sort();
+
+  console.log({ dir });
+
+  return (
+    <img
+      src="/fireballtail.svg"
+      alt="A projectile"
+      style={{
+        rotate: `${
+          {
+            up: 0,
+            down: 90 * 2,
+            left: 90 * 3,
+            right: 90,
+            downleft: 45 * -3,
+            downright: 45 * 3,
+            leftup: 45 * -1,
+            rightup: 45 * 1,
+          }[dir.join("")]
+        }deg`,
+      }}
+    />
+  );
 };
 
 export const Skull = () => {
