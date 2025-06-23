@@ -62,7 +62,12 @@ function getNextPosition(
   const { map, entities } = game;
   let nextPosition: Position = [...currentPosition];
   const wallPositions = entities
-    .filter((e) => e.type === "wall")
+    .filter(
+      (e) =>
+        e.type === "wall" ||
+        // Treat bombs as walls
+        (e.type === "projectile" && e.projectileType === "bomb"),
+    )
     .map((e) => e.position);
 
   const wontCollideWithWall = (x: number, y: number) => {
@@ -149,12 +154,10 @@ export function applyAction(
               currentState,
             ),
             facing: entity.facing,
-            countdown: null,
+            birthTurn: turn,
           } as Projectile;
 
-          if (projectileType === "cross_of_death") {
-            newEntities.push({ ...projectile, countdown: 3 });
-          } else if (projectileType === "basic") {
+          if (projectileType === "bomb" || projectileType === "basic") {
             newEntities.push(projectile);
           } else if (projectileType === "diag_cross") {
             orderedDirections.forEach((facing, idx) => {
@@ -230,13 +233,37 @@ export function applyAction(
 }
 
 function tick(game: GameState): GameState {
-  const { entities, map, turnCount: turn, ...rest } = game;
+  const { entities, map, turnCount, ...rest } = game;
 
   // Build up a "linearized" map of where everything is to make
   // collision detection a constant-time lookup
   const positionsMap = new Map<number, Entity>();
   function positionToIndex(p: Position) {
     return p[0] * map.width + p[1];
+  }
+
+  function asplodeBomb(position: Position, bomb: Projectile) {
+    function handleSlot(slot: Position) {
+      const pos = positionToIndex(slot);
+      const thing = positionsMap.get(pos);
+      if (thing?.type === "wall") return;
+
+      positionsMap.set(pos, {
+        ...bomb,
+        position: slot,
+        projectileType: "asplode",
+        birthTurn: turnCount,
+        id: `${bomb.id}-asplode-${pos}`,
+      });
+    }
+
+    for (const x of [...Array(game.map.width).keys()]) {
+      handleSlot([x, position[1]]);
+    }
+
+    for (const y of [...Array(game.map.height).keys()]) {
+      handleSlot([position[0], y]);
+    }
   }
 
   // 0. add walls
@@ -247,38 +274,53 @@ function tick(game: GameState): GameState {
       positionsMap.set(positionIdx, wall);
     });
 
-  // TODO: bomb
   // 1. move projectiles and put in the map
   entities
     .filter((e) => e.type === "projectile")
     .forEach((projectile) => {
-      const { facing, position, diagFacing, countdown } = projectile;
-      // If projectile hits a boundary and cannot move, it must go away
+      const { facing, position, diagFacing, birthTurn, projectileType } =
+        projectile;
       let nextPosition;
-      if (diagFacing) {
-        nextPosition = getNextPosition(facing, position, game, diagFacing);
+
+      if (projectileType === "bomb") {
+        if (turnCount - birthTurn > 3) {
+          asplodeBomb(position, projectile);
+        } else {
+          nextPosition = [...position] as Position;
+        }
+      } else if (projectileType === "asplode") {
+        // only lasts a turn, clear it
+        return;
+      } else if (birthTurn >= turnCount) {
+        // ALREADY MOVED
+        nextPosition = position;
       } else {
-        nextPosition = getNextPosition(facing, position, game);
+        // Move the thing
+        if (diagFacing) {
+          nextPosition = getNextPosition(facing, position, game, diagFacing);
+        } else {
+          nextPosition = getNextPosition(facing, position, game);
+        }
+
+        // If projectile hits a boundary and cannot move, it must go away
+        if (isSamePosition(nextPosition, position)) return;
       }
 
-      if (isSamePosition(nextPosition, position)) return;
+      if (!nextPosition) return;
 
       // Put projectile in hashmap, checking for projectile <=> projectile collisions
       const positionIdx = positionToIndex(nextPosition);
-      if (countdown === 0) {
-        // TODO: explosion
-      }
+
       if (positionsMap.has(positionIdx)) {
-        if (countdown) {
-          // TODO: splosion
-        } else {
-          // collision -- goodbye to both
+        // collision -- goodbye to both
+        const other = positionsMap.get(positionIdx);
+        if (other?.type === "projectile" && other.projectileType === "bomb") {
           positionsMap.delete(positionIdx);
+          asplodeBomb(nextPosition, other);
         }
       } else {
         positionsMap.set(positionIdx, {
           ...projectile,
-          countdown: countdown ? countdown - 1 : null,
           position: nextPosition,
         });
       }
@@ -299,7 +341,7 @@ function tick(game: GameState): GameState {
 
   return {
     map,
-    turnCount: turn + 1,
+    turnCount: turnCount + 1,
     // convert map back to a list
     entities: [...positionsMap.values()],
     ...rest,

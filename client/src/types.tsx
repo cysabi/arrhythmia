@@ -29,7 +29,12 @@ export type Player = {
   health: number;
 };
 
-export type ProjectileType = "basic" | "spread" | "bomb" | "diag_cross";
+export type ProjectileType =
+  | "basic"
+  | "spread"
+  | "bomb"
+  | "diag_cross"
+  | "asplode";
 
 export type Projectile = {
   type: "projectile";
@@ -39,7 +44,7 @@ export type Projectile = {
   facing: Direction;
   projectileType: ProjectileType;
   diagFacing?: Direction; // for spread
-  countdown: number | null; // for cross of death
+  birthTurn: number;
 };
 
 export type Wall = {
