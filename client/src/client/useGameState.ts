@@ -52,7 +52,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount
+      snapshotTurnCount,
     );
     state.validated = [];
   }

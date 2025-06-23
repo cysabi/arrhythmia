@@ -3,6 +3,7 @@ export type ActionPayload = {
   playerId: ID;
   turnCount: number;
   action: Action;
+  projectileType?: ProjectileType;
 };
 
 export type Action = `move${Capitalize<Direction>}` | "skip" | "shoot";
@@ -28,13 +29,25 @@ export type Player = {
   health: number;
   avatarId: number;
 };
+
+export type ProjectileType =
+  | "basic"
+  | "spread"
+  | "bomb"
+  | "diag_cross"
+  | "asplode";
+
 export type Projectile = {
   type: "projectile";
   id: ID;
   owner: Player["id"];
   position: Position;
   facing: Direction;
+  projectileType: ProjectileType;
+  diagFacing?: Direction; // for spread
+  birthTurn: number;
 };
+
 export type Wall = {
   type: "wall";
   position: Position;
