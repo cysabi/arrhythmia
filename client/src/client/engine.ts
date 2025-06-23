@@ -1,3 +1,4 @@
+import { assignAvatarId } from "../board/entities";
 import type {
   GameState,
   ActionPayload,
@@ -36,6 +37,7 @@ const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
       facing,
       health: DEFAULT_HEALTH,
       you: playerId === pid,
+      avatarId: assignAvatarId(pid),
     };
   });
 };
@@ -104,6 +106,15 @@ export function applyAction(
   currentState: GameState
 ): GameState {
   const { turnCount: turn, entities, map } = currentState;
+  // projectile doesn't seem to show up here in entities list
+  // const entityTypes = entities
+  //   .filter((e) => e.type != "wall")
+  //   .reduce((newEntities: Entity["type"][], entity) => {
+  //     newEntities.push(entity.type);
+  //     return newEntities;
+  //   }, []);
+  // console.log({ entityTypes });
+  // console.log("action:", action.action);
 
   return {
     turnCount: turn,
@@ -119,6 +130,7 @@ export function applyAction(
           newEntities.push(entity);
           break;
         case "shoot":
+          // console.log("shoot happening");
           newEntities.push(entity);
           newEntities.push({
             type: "projectile",
@@ -148,6 +160,13 @@ export function applyAction(
 
           break;
       }
+      // const newEntityTypes = newEntities
+      //   .filter((e) => e.type != "wall")
+      //   .reduce((newEntities: Entity["type"][], entity) => {
+      //     newEntities.push(entity.type);
+      //     return newEntities;
+      //   }, []);
+      // console.log({ newEntityTypes });
 
       return newEntities;
     }, []),

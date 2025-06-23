@@ -1,6 +1,6 @@
 import { PlayerWrapper } from "../hud/player-wrapper";
 import type { Entity, GameState } from "../types";
-import { Player1, Player2, Projectile, Wall } from "./entities";
+import { Projectile, Wall, getAvatar } from "./entities";
 
 const Entity = ({ entity }: { entity: Entity }) => {
   const x = entity.position[0];
@@ -15,7 +15,7 @@ const Entity = ({ entity }: { entity: Entity }) => {
     >
       {entity.type === "player" && (
         <PlayerWrapper player={entity}>
-          {parseFloat(entity.id.split("_")[1]) % 2 ? <Player1 /> : <Player2 />}
+          {getAvatar(entity.avatarId)}
         </PlayerWrapper>
       )}
       {entity.type === "projectile" && <Projectile />}
