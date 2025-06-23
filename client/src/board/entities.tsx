@@ -8,8 +8,7 @@ export const Player = ({
   entity: Extract<Entity, { type: "player" }>;
   tooltipData: { playerId: string; feedback: string };
 }) => {
-  const src =
-    parseFloat(entity.id.split("_")[1]) % 2 ? "/binki.svg" : "/hemmet.svg";
+  const avatarId = assignAvatarId(entity.id);
 
   return (
     <div className="relative group cursor-pointer">
@@ -27,7 +26,7 @@ export const Player = ({
         </div>
       )}
       <Health player={entity} size="smol" hoverOnly={true} />
-      <img src={src} alt="player1" />
+      {getAvatar(avatarId)}
     </div>
   );
 };
@@ -46,4 +45,25 @@ export const Skull = () => {
 
 export const Wall = () => {
   return <img src="/floor.svg" alt="wall" />;
+};
+
+export const getPlayerNumber = (
+  playerId: Extract<Entity, { type: "player" }>["id"]
+): number => {
+  return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
+};
+
+export const assignAvatarId = (
+  playerId: Extract<Entity, { type: "player" }>["id"]
+): number => {
+  // assign one of 2 avatars
+  return getPlayerNumber(playerId) % 2;
+};
+
+export const getAvatar = (avatarId: number) => {
+  return avatarId ? (
+    <img src="/binki.svg" alt="player1" />
+  ) : (
+    <img src="/hemmet.svg" alt="player2" />
+  );
 };

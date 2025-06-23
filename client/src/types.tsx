@@ -27,6 +27,7 @@ export type Player = {
   position: Position;
   facing: Direction;
   health: number;
+  avatarId: number;
 };
 
 export type ProjectileType =

@@ -1,14 +1,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
+:root {
+  font-family: "Press Start 2P", system-ui;
+}
+
 .Background {
   background-size: 100% 100%;
 }
 
 .Title {
-  font-family: "Press Start 2P", system-ui;
   font-size: 100px;
   font-weight: 400;
   color: grey;
+}
+
+.Subtitle {
+  font-size: 24px;
 }
 
 .Button {
