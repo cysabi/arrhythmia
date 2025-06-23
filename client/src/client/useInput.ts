@@ -75,13 +75,11 @@ const useInput = (
           return act("moveRight");
         case " ":
           if (heldKeys.current.has("shift")) {
-            if (heldKeys.current.has("c")) {
-              return act("shoot", "cross_of_death");
-            } else {
-              return act("shoot", "spread");
-            }
+            return act("shoot", "spread");
           } else if (heldKeys.current.has("x")) {
             return act("shoot", "diag_cross");
+          } else if (heldKeys.current.has("b")) {
+            return act("shoot", "bomb");
           } else {
             return act("shoot", "basic");
           }

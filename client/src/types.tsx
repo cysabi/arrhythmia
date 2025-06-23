@@ -29,11 +29,7 @@ export type Player = {
   health: number;
 };
 
-export type ProjectileType =
-  | "basic"
-  | "spread"
-  | "cross_of_death"
-  | "diag_cross";
+export type ProjectileType = "basic" | "spread" | "bomb" | "diag_cross";
 
 export type Projectile = {
   type: "projectile";

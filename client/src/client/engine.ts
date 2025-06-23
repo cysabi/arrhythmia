@@ -247,7 +247,7 @@ function tick(game: GameState): GameState {
       positionsMap.set(positionIdx, wall);
     });
 
-  // TODO: cross-of-death
+  // TODO: bomb
   // 1. move projectiles and put in the map
   entities
     .filter((e) => e.type === "projectile")
