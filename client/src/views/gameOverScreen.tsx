@@ -15,7 +15,7 @@ export const GameOverScreen = ({ winner }: { winner: Player }) => {
           {" "}
           {`${you ? "YOU WIN!" : "YOU LOSE"}`}{" "}
         </div>
-        <div className={`flex justify-center`}>{getWinAvatar(avatarId)}</div>
+        <div className={`flex justify-center ${styles.Bounce}`}>{getWinAvatar(avatarId)}</div>
       </div>
     </div>
   );

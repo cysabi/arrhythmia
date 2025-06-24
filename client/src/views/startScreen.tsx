@@ -35,18 +35,18 @@ export const StartScreen = ({
         <div className={`flex justify-center h-36 gap-60 ${styles.Bounce}`}>
           {playerVisible && (
             <>
-              <img src="/hemmet.svg" alt="player1" />
-              <img src="/binki.svg" alt="player1" />
+              <img src="/hemmetcolor.svg" alt="player1" className="w-40 h-40" />
+              <img src="/binkicolor.svg" alt="player2" className="w-40 h-40" />
             </>
           )}
           {!playerVisible && (
             <>
-              <Skull />
-              <Skull />
+              <img src="/skull.svg" alt="skull" className="w-40 h-40"/>
+              <img src="/skull.svg" alt="skull" className="w-40 h-40"/>
             </>
           )}
         </div>
-        <div className={`${styles.Title}`}>DANCE DANCE EXECUTION</div>
+        <div className={`${styles.Title}`}>BEATDOWN</div>
         <button
           className={styles.Button}
           onClick={() => send("start")}
