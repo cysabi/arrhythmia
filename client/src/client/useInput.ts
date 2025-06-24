@@ -6,7 +6,7 @@ const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
   send: WebSocket["send"],
-  getBeat?: () => { beat: number; offset: number },
+  getBeat?: () => { beat: number; offset: number }
 ) => {
   const actRef = useRef<(a: Action, p?: Ability) => void | null>(null);
 
@@ -38,6 +38,8 @@ const useInput = (
     ) {
       dispatch({ type: "FEEDBACK", payload: "on cooldown!" });
       payload.action = "skip";
+    } else {
+      dispatch({ type: "FEEDBACK", payload: "" });
     }
 
     dispatch({ type: "INPUT", payload });
@@ -47,7 +49,7 @@ const useInput = (
         payload.turnCount,
         payload.action,
         payload.projectileType,
-      ].join(";"),
+      ].join(";")
     );
   };
 
@@ -95,7 +97,7 @@ const isOffBeat = (offset: number) => Math.abs(offset) > 0.225;
 
 const isOnCooldown = (
   cooldowns: ClientState["cooldowns"],
-  projectileType: Ability,
+  projectileType: Ability
 ) => projectileType && cooldowns[projectileType] > 0;
 
 export default useInput;
