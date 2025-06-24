@@ -40,7 +40,7 @@ export function BeatBar({
             animationTimingFunction: "ease-out",
           }}
         >
-          <img src="/heartgem.svg" alt="heartbeat" className="h-15 w-15" />
+          <img src="/heartgem.svg" alt="heartbeat" className="h-25 w-25" />
         </div>
       </div>
     </div>

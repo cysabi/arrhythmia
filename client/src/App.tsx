@@ -71,7 +71,6 @@ const Ability = ({
 }) => {
   return (
     <div className="flex flex-col gap-1 items-center font-['Press_Start_2P']">
-      <div className="text-[#808080]">{num}</div>
       <div className="flex h-16 w-16 border-2 border-[#808080] relative items-center justify-center">
         <img
           className="h-full w-full"
@@ -83,6 +82,7 @@ const Ability = ({
         />
         {cooldown > 0 && <div className="absolute text-xl">{cooldown}</div>}
       </div>
+      <div className="text-[#808080]">{num}</div>
     </div>
   );
 };

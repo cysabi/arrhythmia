@@ -34,7 +34,9 @@ export const Player = ({
           </div>
         </div>
       )}
-      <Health player={entity} size="smol" onPlayer={true} />
+      <div className="absolute inset-0 flex flex-col items-center translate-y-[100%]">
+        <Health player={entity} size="smol" onPlayer={true} />
+      </div>
       <div style={{ rotate }}>{getAvatar(avatarId)}</div>
     </div>
   );
