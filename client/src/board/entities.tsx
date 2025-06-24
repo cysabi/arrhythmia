@@ -104,9 +104,9 @@ export const assignAvatarId = (
 
 export const getAvatar = (avatarId: number) => {
   return avatarId ? (
-    <img src="/binki.svg" alt="player1" />
+    <img src="/binkicolor.svg" alt="player1" />
   ) : (
-    <img src="/hemmet.svg" alt="player2" />
+    <img src="/hemmetcolor.svg" alt="player2" />
   );
 };
 

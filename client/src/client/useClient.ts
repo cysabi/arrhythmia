@@ -18,7 +18,7 @@ const useClient = () => {
     return progressGame(
       state.snapshot,
       [...state.validated, ...state.optimistic],
-      state.turnCount,
+      state.turnCount
     );
   }, [state]);
 
@@ -27,9 +27,15 @@ const useClient = () => {
       playerId: state.playerId,
       feedback: state.feedback,
     }),
-    [state.playerId, state.feedback],
+    [state.playerId, state.feedback]
   );
 
-  return { ws, conductor, view, tooltipData } as const;
+  return {
+    ws,
+    conductor,
+    view,
+    tooltipData,
+    cooldowns: state.cooldowns,
+  } as const;
 };
 export default useClient;
