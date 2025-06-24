@@ -39,8 +39,8 @@ function App() {
         <Board gameState={view} tooltipData={tooltipData} />
       </div>
       <div className="20svh">
-        <BeatBar barProps={conductor.barProps} />
         <Hud devFlag={false} gameState={view} />
+        <BeatBar barProps={conductor.barProps} />
       </div>
     </div>
   );
