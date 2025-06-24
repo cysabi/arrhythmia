@@ -15,7 +15,7 @@ const getWinner = (view: GameState): Player | null => {
 };
 
 function App() {
-  const { ws, conductor, view, tooltipData } = useClient();
+  const { ws, conductor, view, tooltipData, cooldowns } = useClient();
 
   if (!ws.connected) {
     return "connecting...";
@@ -37,6 +37,13 @@ function App() {
         <Hud devFlag={false} gameState={view} />
       </div>
       <BeatBar barProps={conductor.barProps} />
+      <div className="flex flex-col">
+        <div className="flex">basic | cooldown: {cooldowns.basic}</div>
+        <div className="flex">bomb | cooldown: {cooldowns.bomb}</div>
+        <div className="flex">
+          diag_cross | cooldown: {cooldowns.diag_cross}
+        </div>
+      </div>
     </div>
   );
 }
