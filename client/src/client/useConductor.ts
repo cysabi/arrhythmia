@@ -13,14 +13,14 @@ import { DrawClass } from "tone/build/esm/core/util/Draw";
 const track1 = {
   bpm: 152,
   offset: 0.5,
-  volume: -20,
+  volume: -10,
   song: "/song.wav",
   loopPoints: ["3m", "109m"] as const,
 };
 
 const useConductor = (
   startAt: number | null,
-  dispatch: ActionDispatch<[client: ClientEvent]>,
+  dispatch: ActionDispatch<[client: ClientEvent]>
 ) => {
   const [barProps, setBarProps] = useState({ time: 0, bpm: 0 });
   const transport = useTransport(startAt, dispatch, setBarProps);
@@ -47,7 +47,7 @@ const useConductor = (
 export const useTransport = (
   startAt: number | null,
   dispatch: ActionDispatch<[client: ClientEvent]>,
-  setBarProps: (state: { time: number; bpm: number }) => void,
+  setBarProps: (state: { time: number; bpm: number }) => void
 ) => {
   const transport = useRef<TransportClass>(null as any);
   const players = useRef<Tone.Players>(null as any);
