@@ -3,8 +3,8 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-	plugins: [tailwindcss(), react()],
-	preview: {
-		allowedHosts: ["dde.jackratner.com"],
-	},
+  plugins: [tailwindcss(), react()],
+  preview: {
+    allowedHosts: ["beatdown.jackratner.com"],
+  },
 });
