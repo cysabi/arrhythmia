@@ -3,7 +3,7 @@ export type ActionPayload = {
   playerId: ID;
   turnCount: number;
   action: Action;
-  projectileType?: ProjectileType;
+  projectileType?: Ability;
 };
 
 export type Action = `move${Capitalize<Direction>}` | "skip" | "shoot";
@@ -36,6 +36,8 @@ export type ProjectileType =
   | "bomb"
   | "diag_cross"
   | "asplode";
+
+export type Ability = Extract<ProjectileType, "basic" | "bomb" | "diag_cross">;
 
 export type Projectile = {
   type: "projectile";
