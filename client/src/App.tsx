@@ -33,12 +33,15 @@ function App() {
 
   return (
     <div className="h-svh w-svw flex flex-col">
-      <OpponentHealth gameState={view} />
-      <div className="flex-grow">
+      {/* <OpponentHealth gameState={view} /> */}
+
+      <div className="flex items-center justify-center h-[80svh]">
         <Board gameState={view} tooltipData={tooltipData} />
+      </div>
+      <div className="20svh">
+        <BeatBar barProps={conductor.barProps} />
         <Hud devFlag={false} gameState={view} />
       </div>
-      <BeatBar barProps={conductor.barProps} />
     </div>
   );
 }

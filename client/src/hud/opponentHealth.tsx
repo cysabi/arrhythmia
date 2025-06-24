@@ -31,6 +31,4 @@ export default function Opponent({
       </div>
     </>
   );
-
-  // <Health player={} size="big" />;
 }
