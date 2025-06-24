@@ -1,27 +1,24 @@
 import { useEffect, useRef, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
-import type { Action, ProjectileType } from "../types";
+import type { Action, Ability } from "../types";
 
 const useInput = (
   state: ClientState,
   dispatch: ActionDispatch<[client: ClientEvent]>,
   send: WebSocket["send"],
-  getBeat?: () => { beat: number; offset: number },
+  getBeat?: () => { beat: number; offset: number }
 ) => {
-  const actRef = useRef<(a: Action, p?: ProjectileType) => void | null>(null);
+  const actRef = useRef<(a: Action, p?: Ability) => void | null>(null);
 
-  actRef.current = (action: Action, projectileType?: ProjectileType) => {
+  actRef.current = (action: Action, projectileType?: Ability) => {
     if (!getBeat) return; // song hasn't started yet
     const { beat, offset } = getBeat();
 
-    // if player has already moved for beat that theyre trying to move for
-    if (
-      [...state.optimistic, ...state.validated].find(
-        (p) => p.turnCount === beat,
-      )
-    ) {
+    if (alreadyMoved(state, beat)) {
       return dispatch({ type: "FEEDBACK", payload: "already moved!" });
     }
+
+    console.log(state.cooldowns);
 
     const payload = {
       action,
@@ -29,13 +26,18 @@ const useInput = (
       playerId: state.playerId,
       projectileType,
     };
-    if (Math.abs(offset) > 0.225) {
-      payload.action = "skip";
-      console.log({ offset });
+    if (isOffBeat(offset)) {
       dispatch({
         type: "FEEDBACK",
         payload: offset > 0 ? "too late!" : "too early!",
       });
+      payload.action = "skip";
+    } else if (
+      action === "shoot" &&
+      isOnCooldown(state.cooldowns, projectileType!)
+    ) {
+      dispatch({ type: "FEEDBACK", payload: "on cooldown!" });
+      payload.action = "skip";
     } else {
       dispatch({ type: "FEEDBACK", payload: "" });
     }
@@ -47,24 +49,18 @@ const useInput = (
         payload.turnCount,
         payload.action,
         payload.projectileType,
-      ].join(";"),
+      ].join(";")
     );
   };
 
-  let heldKeys = useRef(new Set());
-
   useEffect(() => {
-    const handleKeyup = (e: KeyboardEvent) => {
-      heldKeys.current.delete(e.key.toLowerCase());
-    };
-
     const handleKeydown = (e: KeyboardEvent) => {
       const act = actRef.current;
       if (!act) return console.error("Act not yet registered.");
 
       const key = e.key;
-      heldKeys.current.add(key.toLowerCase());
       switch (key) {
+        // move
         case "w":
         case "ArrowUp":
           return act("moveUp");
@@ -77,26 +73,31 @@ const useInput = (
         case "d":
         case "ArrowRight":
           return act("moveRight");
-        case " ":
-          if (heldKeys.current.has("shift")) {
-            return act("shoot", "spread");
-          } else if (heldKeys.current.has("x")) {
-            return act("shoot", "diag_cross");
-          } else if (heldKeys.current.has("b")) {
-            return act("shoot", "bomb");
-          } else {
-            return act("shoot", "basic");
-          }
+        // shoot
+        case "1":
+          return act("shoot", "basic");
+        case "2":
+          return act("shoot", "bomb");
+        case "3":
+          return act("shoot", "diag_cross");
       }
     };
 
     document.addEventListener("keydown", handleKeydown, true);
-    document.addEventListener("keyup", handleKeyup, true);
     return () => {
       document.removeEventListener("keydown", handleKeydown);
-      document.removeEventListener("keyup", handleKeyup);
     };
   }, []);
 };
+
+const alreadyMoved = (state: ClientState, beat: number) =>
+  [...state.optimistic, ...state.validated].find((p) => p.turnCount === beat);
+
+const isOffBeat = (offset: number) => Math.abs(offset) > 0.225;
+
+const isOnCooldown = (
+  cooldowns: ClientState["cooldowns"],
+  projectileType: Ability
+) => projectileType && cooldowns[projectileType] > 0;
 
 export default useInput;

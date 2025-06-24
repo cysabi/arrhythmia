@@ -20,6 +20,9 @@ const Board = ({
           gridTemplateRows: `repeat(${gameState.map.height}, ${
             100 / gameState.map.height
           }%)`,
+          backgroundImage: 'url("/grass tile.png")',
+          backgroundRepeat: "repeat",
+          backgroundSize: `${100 / gameState.map.width}% ${100 / gameState.map.height}%`,
         }}
       >
         {gameState.entities.map((entity) => (
@@ -39,7 +42,9 @@ const Board = ({
             {entity.type === "player" && (
               <Player entity={entity} tooltipData={tooltipData} />
             )}
-            {entity.type === "projectile" && <Projectile entity={entity} />}
+            {entity.type === "projectile" && (
+              <Projectile entity={entity} turnCount={gameState.turnCount} />
+            )}
             {entity.type === "wall" && <Wall />}
           </div>
         ))}

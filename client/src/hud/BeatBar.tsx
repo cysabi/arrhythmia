@@ -11,9 +11,8 @@ export function BeatBar({
       <div
         className={`flex-1 h-10 overflow-hidden ${styles.Bar}`}
         style={{
-          backgroundImage: `url("/Sprite-0001.svg")`,
+          backgroundImage: `url("/beat-bar.svg")`,
           backgroundSize: "50px 100%",
-          // backgroundPositionX: '200px',
           animationDuration: `${duration}s`,
           animationIterationCount: "infinite",
           animationDelay: `${barProps.time % duration}s`,
@@ -23,9 +22,8 @@ export function BeatBar({
       <div
         className={`flex-1 h-10 overflow-hidden ${styles.Bar} rotate-180`}
         style={{
-          backgroundImage: `url("/Sprite-0001.svg")`,
+          backgroundImage: `url("/beat-bar.svg")`,
           backgroundSize: "50px 100%",
-          // backgroundPositionX: '200px',
           animationDuration: `${duration}s`,
           animationIterationCount: "infinite",
           animationDelay: `${barProps.time % duration}s`,
@@ -33,7 +31,7 @@ export function BeatBar({
         }}
       ></div>
       <div className="absolute inset-0 flex justify-center">
-        <div className="w-2 bg-blue-400"></div>
+        <img src="/heartgem.svg" />
       </div>
     </div>
   );

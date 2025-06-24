@@ -1,3 +1,4 @@
+import { BOMB_TIME } from "../client/gameDefaults";
 import { Health } from "../hud/health";
 import type { Entity } from "../types";
 
@@ -14,16 +15,20 @@ export const Player = ({
     entity.facing
   ];
 
+  let color = "text-red-600";
+  if (feedback.includes("early")) {
+    color = "text-cyan-600";
+  }
+  if (feedback.includes("late")) {
+    color = "text-purple-600";
+  }
+
   return (
     <div className="relative group cursor-pointer">
       {entity.id === playerId && (
         <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
           <div
-            className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${
-              feedback.includes("already") && "text-orange-600"
-            } ${feedback.includes("early") && "text-cyan-600"} ${
-              feedback.includes("late") && "text-purple-600"
-            }`}
+            className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
           >
             {feedback}
           </div>
@@ -37,16 +42,26 @@ export const Player = ({
 
 export const Projectile = ({
   entity,
+  turnCount,
 }: {
   entity: Extract<Entity, { type: "projectile" }>;
+  turnCount: number;
 }) => {
   const dir = [entity.facing];
   if (entity.diagFacing) dir.push(entity.diagFacing);
   dir.sort();
 
+  let frame = "";
+
+  if (
+    entity.projectileType === "bomb" &&
+    entity.birthTurn - turnCount < -BOMB_TIME
+  )
+    frame = "2";
+
   return (
     <img
-      src="/fireballtail.svg"
+      src={`/projectile-${entity.projectileType}${frame}.svg`}
       alt="A projectile"
       style={{
         rotate: `${
@@ -75,13 +90,13 @@ export const Wall = () => {
 };
 
 export const getPlayerNumber = (
-  playerId: Extract<Entity, { type: "player" }>["id"],
+  playerId: Extract<Entity, { type: "player" }>["id"]
 ): number => {
   return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
 };
 
 export const assignAvatarId = (
-  playerId: Extract<Entity, { type: "player" }>["id"],
+  playerId: Extract<Entity, { type: "player" }>["id"]
 ): number => {
   // assign one of 2 avatars
   return getPlayerNumber(playerId) % 2;
