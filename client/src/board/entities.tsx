@@ -95,3 +95,11 @@ export const getAvatar = (avatarId: number) => {
     <img src="/hemmet.svg" alt="player2" />
   );
 };
+
+export const getWinAvatar = (avatarId: number) => {
+  return avatarId ? (
+    <img src="/binkiwin.svg" alt="player1" />
+  ) : (
+    <img src="/hemmetwin.svg" alt="player2" />
+  );
+};

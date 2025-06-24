@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Player, Skull } from "../board/entities";
+import { Skull } from "../board/entities";
 import styles from "./views.module.css";
 
 export const StartScreen = ({
