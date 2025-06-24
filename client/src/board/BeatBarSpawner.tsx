@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { BeatBar } from "./BeatBar";
 
-const interval = 600; // ms
-const duration = 2; // sec
+const interval = 600; // ms between bar spawns
+const duration = 2000; // ms for bar to reach center
 
 export function BeatBarSpawner() {
   const [bars, setBars] = useState<{ id: number }[]>([]);
@@ -17,14 +17,6 @@ export function BeatBarSpawner() {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const cleanup = setInterval(() => {
-      const now = Date.now();
-      setBars((prev) => prev.filter((bar) => now - bar.id < duration * 1000));
-    }, 1000);
-    return () => clearInterval(cleanup);
-  }, []);
-
   return (
     <div className="relative w-full h-20 bg-black overflow-hidden">
       {bars.map((bar) => (
@@ -33,4 +25,3 @@ export function BeatBarSpawner() {
     </div>
   );
 }
-export default BeatBarSpawner;
