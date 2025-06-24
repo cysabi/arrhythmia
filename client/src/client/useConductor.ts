@@ -9,12 +9,14 @@ import type { ClientEvent } from "./useGameState";
 import * as Tone from "tone";
 import { TransportClass } from "tone/build/esm/core/clock/Transport";
 import { DrawClass } from "tone/build/esm/core/util/Draw";
+import song from "/song.wav";
+import clap from "/clap.wav";
 
 const track1 = {
   bpm: 152,
   offset: 0.5,
   volume: -10,
-  song: "/song.wav",
+  song,
   loopPoints: ["3m", "109m"] as const,
 };
 
@@ -64,7 +66,7 @@ export const useTransport = (
   if (players.current === null)
     players.current = new Tone.Players({
       song: track1.song,
-      clap: "/clap.wav",
+      clap,
     }).toDestination();
 
   useEffect(() => {
