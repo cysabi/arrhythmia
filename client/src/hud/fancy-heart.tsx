@@ -3,6 +3,8 @@ const SIZER = {
   big: "h-8 w-8",
 };
 
+import heart from "/heart.svg";
+
 export function FancyHeart({
   size,
   style,
@@ -14,7 +16,7 @@ export function FancyHeart({
     <div className={SIZER[size]} style={style}>
       <img
         style={{ scale: 2 }}
-        src="/heart.svg"
+        src={heart}
         alt="fancy-heart"
         className="w-full h-full object-contain"
       />

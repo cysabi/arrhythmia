@@ -1,6 +1,8 @@
-import { getWinAvatar } from "../board/entities";
 import type { GameState, Player } from "../types";
 import { Health } from "./health";
+
+import binkiwin from "/binkiwin.svg";
+import hemmetwin from "/hemmetwin.svg";
 
 export function Hud({
   gameState,
@@ -16,9 +18,9 @@ export function Hud({
     <div className="flex items-center gap-4">
       <div className="h-24">
         {self.avatarId ? (
-          <img className="h-full" src="/binkiwin.svg" alt="player1" />
+          <img className="h-full" src={binkiwin} alt="player1" />
         ) : (
-          <img className="h-full" src="/hemmetwin.svg" alt="player2" />
+          <img className="h-full" src={hemmetwin} alt="player2" />
         )}
       </div>
       <div className="translate-y-3">

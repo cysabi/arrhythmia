@@ -83,12 +83,14 @@ export const Projectile = ({
   );
 };
 
+import skull from "/skull.svg";
 export const Skull = () => {
-  return <img src="/skull.svg" alt="skull" />;
+  return <img src={skull} alt="skull" />;
 };
 
+import wall from "/wall.svg";
 export const Wall = () => {
-  return <img src="/wall.svg" alt="wall" />;
+  return <img src={wall} alt="wall" />;
 };
 
 export const getPlayerNumber = (
@@ -104,18 +106,23 @@ export const assignAvatarId = (
   return getPlayerNumber(playerId) % 2;
 };
 
+import binkicolor from "/binkicolor.svg";
+import hemmetcolor from "/hemmetcolor.svg";
+import binkiwin from "/binkiwin.svg";
+import hemmetwin from "/hemmetwin.svg";
+
 export const getAvatar = (avatarId: number) => {
   return avatarId ? (
-    <img src="/binkicolor.svg" alt="player1" />
+    <img src={binkicolor} alt="player1" />
   ) : (
-    <img src="/hemmetcolor.svg" alt="player2" />
+    <img src={hemmetcolor} alt="player2" />
   );
 };
 
 export const getWinAvatar = (avatarId: number) => {
   return avatarId ? (
-    <img src="/binkiwin.svg" alt="player1" />
+    <img src={binkiwin} alt="player1" />
   ) : (
-    <img src="/hemmetwin.svg" alt="player2" />
+    <img src={hemmetwin} alt="player2" />
   );
 };

@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import styles from "./views.module.css";
+import hemmetcolor from "/hemmetcolor.svg";
+import binkicolor from "/binkicolor.svg";
+import skull from "/skull.svg";
 
 export const StartScreen = ({
   status,
@@ -34,14 +37,14 @@ export const StartScreen = ({
         <div className={`flex justify-center h-36 gap-60 ${styles.Bounce}`}>
           {playerVisible && (
             <>
-              <img src="/hemmetcolor.svg" alt="player1" className="w-40 h-40" />
-              <img src="/binkicolor.svg" alt="player2" className="w-40 h-40" />
+              <img src={hemmetcolor} alt="player1" className="w-40 h-40" />
+              <img src={binkicolor} alt="player2" className="w-40 h-40" />
             </>
           )}
           {!playerVisible && (
             <>
-              <img src="/skull.svg" alt="skull" className="w-40 h-40" />
-              <img src="/skull.svg" alt="skull" className="w-40 h-40" />
+              <img src={skull} alt="skull" className="w-40 h-40" />
+              <img src={skull} alt="skull" className="w-40 h-40" />
             </>
           )}
         </div>

@@ -1,4 +1,5 @@
 import styles from "./beatbar.module.css";
+import heartgem from "/heartgem.svg";
 
 export function BeatBar({
   barProps,
@@ -40,7 +41,7 @@ export function BeatBar({
             animationTimingFunction: "ease-out",
           }}
         >
-          <img src="/heartgem.svg" alt="heartbeat" className="h-25 w-25" />
+          <img src={heartgem} alt="heartbeat" className="h-25 w-25" />
         </div>
       </div>
     </div>
