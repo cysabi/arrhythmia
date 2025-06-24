@@ -10,6 +10,10 @@ export const Player = ({
 }) => {
   const avatarId = assignAvatarId(entity.id);
 
+  const rotate = { up: "180deg", down: "0deg", left: "90deg", right: "-90deg" }[
+    entity.facing
+  ];
+
   return (
     <div className="relative group cursor-pointer">
       {entity.id === playerId && (
@@ -26,7 +30,7 @@ export const Player = ({
         </div>
       )}
       <Health player={entity} size="smol" hoverOnly={true} />
-      {getAvatar(avatarId)}
+      <div style={{ rotate }}>{getAvatar(avatarId)}</div>
     </div>
   );
 };
@@ -76,13 +80,13 @@ export const Wall = () => {
 };
 
 export const getPlayerNumber = (
-  playerId: Extract<Entity, { type: "player" }>["id"],
+  playerId: Extract<Entity, { type: "player" }>["id"]
 ): number => {
   return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
 };
 
 export const assignAvatarId = (
-  playerId: Extract<Entity, { type: "player" }>["id"],
+  playerId: Extract<Entity, { type: "player" }>["id"]
 ): number => {
   // assign one of 2 avatars
   return getPlayerNumber(playerId) % 2;
