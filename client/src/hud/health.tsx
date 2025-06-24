@@ -10,11 +10,11 @@ const SIZER = {
 export function Health({
   player,
   size,
-  hoverOnly = false,
+  onPlayer = false,
 }: {
   player: Player;
   size: "smol" | "big";
-  hoverOnly: boolean;
+  onPlayer?: boolean;
 }) {
   const [isFlashing, setIsFlashing] = useState(false);
   const prevHealth = useRef(player.health);
@@ -36,22 +36,14 @@ export function Health({
   }, [player.health]);
 
   // Determine visibility classes
-  const shouldBeVisible = !hoverOnly || isFlashing;
-  const shouldShowOnHover = hoverOnly && !isFlashing;
+  const shouldBeVisible = !onPlayer || isFlashing;
 
   const baseClasses = `absolute flex items-center cursor-pointer ${SIZER[size]}`;
-  const visibilityClasses = shouldBeVisible
-    ? "opacity-100"
-    : "opacity-0 group-hover:opacity-100";
-  const hoverEffects = shouldShowOnHover
-    ? "group-hover:-translate-y-2 group-hover:scale-110 transition duration-300"
-    : "";
+  const visibilityClasses = shouldBeVisible ? "opacity-100" : "opacity-0";
   const flashEffect = isFlashing ? "animate-pulse" : "";
 
   return (
-    <div
-      className={`${baseClasses} ${visibilityClasses} ${hoverEffects} ${flashEffect}`}
-    >
+    <div className={`${baseClasses} ${visibilityClasses} ${flashEffect}`}>
       {[...Array(player.health)].map((_, i) => (
         <FancyHeart
           key={`heart-${i}`}

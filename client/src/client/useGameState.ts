@@ -48,6 +48,10 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       return { ...state, feedback: event.payload };
     }
 
+    case "FEEDBACK": {
+      return { ...state, feedback: event.payload };
+    }
+
     case "TICK": {
       return { ...state, turnCount: state.turnCount + 1 };
     }

@@ -29,7 +29,7 @@ export const Player = ({
           </div>
         </div>
       )}
-      <Health player={entity} size="smol" hoverOnly={true} />
+      <Health player={entity} size="smol" onPlayer={true} />
       <div style={{ rotate }}>{getAvatar(avatarId)}</div>
     </div>
   );
@@ -40,14 +40,9 @@ export const Projectile = ({
 }: {
   entity: Extract<Entity, { type: "projectile" }>;
 }) => {
-  // TODO
-  // entity.facing
-  // entity.diagFacing
   const dir = [entity.facing];
   if (entity.diagFacing) dir.push(entity.diagFacing);
   dir.sort();
-
-  console.log({ dir });
 
   return (
     <img
@@ -80,13 +75,13 @@ export const Wall = () => {
 };
 
 export const getPlayerNumber = (
-  playerId: Extract<Entity, { type: "player" }>["id"]
+  playerId: Extract<Entity, { type: "player" }>["id"],
 ): number => {
   return parseFloat(playerId.split("_")[1]) - 100; // why do player ids start at 100?
 };
 
 export const assignAvatarId = (
-  playerId: Extract<Entity, { type: "player" }>["id"]
+  playerId: Extract<Entity, { type: "player" }>["id"],
 ): number => {
   // assign one of 2 avatars
   return getPlayerNumber(playerId) % 2;
