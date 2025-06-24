@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Player1, Player2, Skull } from "../board/entities";
+import { Skull } from "../board/entities";
 import styles from "./views.module.css";
 
 export const StartScreen = ({
@@ -35,8 +35,8 @@ export const StartScreen = ({
         <div className={`flex justify-center h-36 gap-80 ${styles.Bounce}`}>
           {playerVisible && (
             <>
-              <Player1 />
-              <Player2 />
+              <img src="/hemmet.svg" alt="player1" />
+              <img src="/binki.svg" alt="player1" />
             </>
           )}
           {!playerVisible && (

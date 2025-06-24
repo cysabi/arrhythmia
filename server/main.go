@@ -38,7 +38,7 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 			skipPayload := PayloadAction{
 				pid:       pid,
 				turnCount: g.turnCount,
-				action:    "skip",
+				action:    []string{"skip"},
 			}.Send()
 			m.Broadcast([]byte(skipPayload))
 		}
@@ -108,7 +108,7 @@ func main() {
 
 			// set when/them
 			payload.when = fmt.Sprintf("%d",
-				time.Now().Add(4*time.Second).UnixMilli())
+				time.Now().Add(2*time.Second).UnixMilli())
 			payload.them = pids
 
 			// write with you

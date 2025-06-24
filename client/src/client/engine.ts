@@ -1,3 +1,4 @@
+import { assignAvatarId } from "../board/entities";
 import type {
   GameState,
   ActionPayload,
@@ -6,6 +7,7 @@ import type {
   Direction,
   Wall,
   ID,
+  Projectile,
 } from "../types";
 import {
   DEFAULT_HEALTH,
@@ -13,6 +15,7 @@ import {
   WALL_HEIGHT,
   WALL_WIDTH,
   WALL_POSITIONS,
+  BOMB_TIME,
 } from "./gameDefaults";
 
 let projectileId = 0;
@@ -36,6 +39,7 @@ const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
       facing,
       health: DEFAULT_HEALTH,
       you: playerId === pid,
+      avatarId: assignAvatarId(pid),
     };
   });
 };
@@ -43,7 +47,7 @@ const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
 const getWallEntities = (wallPositions: [Position, ID][]) => {
   let wallEntities: Wall[] = [];
   wallPositions.forEach(([position, id]) =>
-    wallEntities.push({ type: "wall", position: position, id: id })
+    wallEntities.push({ type: "wall", position: position, id: id }),
   );
   return wallEntities;
 };
@@ -55,12 +59,18 @@ function isSamePosition(p1: Position, p2: Position): boolean {
 function getNextPosition(
   direction: Direction,
   currentPosition: Position,
-  game: GameState
+  game: GameState,
+  diagDir?: Direction,
 ): Position {
   const { map, entities } = game;
   let nextPosition: Position = [...currentPosition];
   const wallPositions = entities
-    .filter((e) => e.type === "wall")
+    .filter(
+      (e) =>
+        e.type === "wall" ||
+        // Treat bombs as walls
+        (e.type === "projectile" && e.projectileType === "bomb"),
+    )
     .map((e) => e.position);
 
   const wontCollideWithWall = (x: number, y: number) => {
@@ -71,37 +81,52 @@ function getNextPosition(
 
   switch (direction) {
     case "down":
-      if (wontCollideWithWall(nextPosition[0], nextPosition[1] + 1)) {
-        nextPosition[1] += 1;
-      }
+      nextPosition[1] += 1;
       break;
     case "up":
-      if (wontCollideWithWall(nextPosition[0], nextPosition[1] - 1)) {
-        nextPosition[1] -= 1;
-      }
+      nextPosition[1] -= 1;
       break;
     case "left":
-      if (wontCollideWithWall(nextPosition[0] - 1, nextPosition[1])) {
-        nextPosition[0] -= 1;
-      }
+      nextPosition[0] -= 1;
       break;
     case "right":
-      if (wontCollideWithWall(nextPosition[0] + 1, nextPosition[1])) {
-        nextPosition[0] += 1;
-      }
+      nextPosition[0] += 1;
       break;
   }
 
-  // Enforce map boundary
-  nextPosition[0] = Math.min(Math.max(nextPosition[0], 0), map.width - 1);
-  nextPosition[1] = Math.min(Math.max(nextPosition[1], 0), map.height - 1);
+  switch (diagDir) {
+    case "down":
+      nextPosition[1] += 1;
+      break;
+    case "up":
+      nextPosition[1] -= 1;
+      break;
+    case "left":
+      nextPosition[0] -= 1;
+      break;
+    case "right":
+      nextPosition[0] += 1;
+      break;
+  }
 
-  return nextPosition;
+  if (
+    wontCollideWithWall(nextPosition[0], nextPosition[1]) &&
+    nextPosition[0] >= 0 &&
+    nextPosition[0] < map.width &&
+    nextPosition[1] >= 0 &&
+    nextPosition[1] < map.height
+  ) {
+    return nextPosition;
+  } else {
+    return [...currentPosition];
+  }
 }
+
+const orderedDirections: Direction[] = ["up", "right", "down", "left"];
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState
+  currentState: GameState,
 ): GameState {
   const { turnCount: turn, entities, map } = currentState;
 
@@ -120,17 +145,73 @@ export function applyAction(
           break;
         case "shoot":
           newEntities.push(entity);
-          newEntities.push({
+          const projectileType = action.projectileType;
+          const projectile = {
+            projectileType,
             type: "projectile",
             id: `${entity.id}-${projectileId++}`,
             owner: entity.id,
             position: getNextPosition(
               entity.facing,
               entity.position,
-              currentState
+              currentState,
             ),
             facing: entity.facing,
-          });
+            birthTurn: turn,
+          } as Projectile;
+
+          if (projectileType === "bomb" || projectileType === "basic") {
+            newEntities.push(projectile);
+          } else if (projectileType === "diag_cross") {
+            orderedDirections.forEach((facing, idx) => {
+              const diagFacing =
+                orderedDirections[(idx + 1) % orderedDirections.length];
+              const position = getNextPosition(
+                facing,
+                entity.position,
+                currentState,
+                diagFacing,
+              );
+
+              if (!isSamePosition(position, entity.position)) {
+                newEntities.push({
+                  ...projectile,
+                  id: projectile.id + `-${idx + 1}`,
+                  position,
+                  facing,
+                  diagFacing,
+                });
+              }
+            });
+          } else if (projectileType === "spread") {
+            const dirIdx = orderedDirections.indexOf(projectile.facing);
+
+            newEntities.push({ ...projectile });
+
+            [dirIdx - 1, dirIdx + 1].forEach((dir, idx) => {
+              const diagFacing =
+                orderedDirections[
+                  // Add length to prevent negative number
+                  (orderedDirections.length + dir) % orderedDirections.length
+                ];
+              const position = getNextPosition(
+                projectile.facing,
+                entity.position,
+                currentState,
+                diagFacing,
+              );
+
+              if (!isSamePosition(position, projectile.position)) {
+                newEntities.push({
+                  ...projectile,
+                  id: projectile.id + `-${idx + 1}`,
+                  position,
+                  diagFacing,
+                });
+              }
+            });
+          }
+
           break;
         case "moveUp":
         case "moveDown":
@@ -155,13 +236,37 @@ export function applyAction(
 }
 
 function tick(game: GameState): GameState {
-  const { entities, map, turnCount: turn, ...rest } = game;
+  const { entities, map, turnCount, ...rest } = game;
 
   // Build up a "linearized" map of where everything is to make
   // collision detection a constant-time lookup
   const positionsMap = new Map<number, Entity>();
   function positionToIndex(p: Position) {
     return p[0] * map.width + p[1];
+  }
+
+  function asplodeBomb(position: Position, bomb: Projectile) {
+    function handleSlot(slot: Position) {
+      const pos = positionToIndex(slot);
+      const thing = positionsMap.get(pos);
+      if (thing?.type === "wall") return;
+
+      positionsMap.set(pos, {
+        ...bomb,
+        position: slot,
+        projectileType: "asplode",
+        birthTurn: turnCount,
+        id: `${bomb.id}-asplode-${pos}`,
+      });
+    }
+
+    for (const x of [...Array(game.map.width).keys()]) {
+      handleSlot([x, position[1]]);
+    }
+
+    for (const y of [...Array(game.map.height).keys()]) {
+      handleSlot([position[0], y]);
+    }
   }
 
   // 0. add walls
@@ -176,16 +281,46 @@ function tick(game: GameState): GameState {
   entities
     .filter((e) => e.type === "projectile")
     .forEach((projectile) => {
-      const { facing, position } = projectile;
-      // If projectile hits a boundary and cannot move, it must go away
-      const nextPosition = getNextPosition(facing, position, game);
-      if (isSamePosition(nextPosition, position)) return;
+      const { facing, position, diagFacing, birthTurn, projectileType } =
+        projectile;
+      let nextPosition;
+
+      if (projectileType === "bomb") {
+        if (turnCount - birthTurn > BOMB_TIME) {
+          asplodeBomb(position, projectile);
+        } else {
+          nextPosition = [...position] as Position;
+        }
+      } else if (projectileType === "asplode") {
+        // only lasts a turn, clear it
+        return;
+      } else if (birthTurn >= turnCount) {
+        // ALREADY MOVED
+        nextPosition = position;
+      } else {
+        // Move the thing
+        if (diagFacing) {
+          nextPosition = getNextPosition(facing, position, game, diagFacing);
+        } else {
+          nextPosition = getNextPosition(facing, position, game);
+        }
+
+        // If projectile hits a boundary and cannot move, it must go away
+        if (isSamePosition(nextPosition, position)) return;
+      }
+
+      if (!nextPosition) return;
 
       // Put projectile in hashmap, checking for projectile <=> projectile collisions
       const positionIdx = positionToIndex(nextPosition);
+
       if (positionsMap.has(positionIdx)) {
         // collision -- goodbye to both
-        positionsMap.delete(positionIdx);
+        const other = positionsMap.get(positionIdx);
+        if (other?.type === "projectile" && other.projectileType === "bomb") {
+          positionsMap.delete(positionIdx);
+          asplodeBomb(nextPosition, other);
+        }
       } else {
         positionsMap.set(positionIdx, {
           ...projectile,
@@ -209,7 +344,7 @@ function tick(game: GameState): GameState {
 
   return {
     map,
-    turnCount: turn + 1,
+    turnCount: turnCount + 1,
     // convert map back to a list
     entities: [...positionsMap.values()],
     ...rest,
@@ -219,7 +354,7 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  desiredTurnCount: number
+  desiredTurnCount: number,
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
@@ -247,7 +382,7 @@ export function initGame(
         playerId: string;
         peerIds: string[];
       }
-    | undefined = undefined
+    | undefined = undefined,
 ): GameState {
   const game = structuredClone(initialState);
   if (props === undefined) return game;

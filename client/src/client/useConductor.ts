@@ -4,18 +4,18 @@ import {
   type ActionDispatch,
   useCallback,
   useState,
-} from 'react';
-import type { ClientEvent } from './useGameState';
-import * as Tone from 'tone';
-import { TransportClass } from 'tone/build/esm/core/clock/Transport';
-import { DrawClass } from 'tone/build/esm/core/util/Draw';
+} from "react";
+import type { ClientEvent } from "./useGameState";
+import * as Tone from "tone";
+import { TransportClass } from "tone/build/esm/core/clock/Transport";
+import { DrawClass } from "tone/build/esm/core/util/Draw";
 
 const track1 = {
   bpm: 152,
   offset: 0.5,
   volume: -20,
-  song: '/song.wav',
-  loopPoints: ['3m', '109m'] as const,
+  song: "/song.wav",
+  loopPoints: ["3m", "109m"] as const,
 };
 
 const useConductor = (
@@ -36,12 +36,12 @@ const useConductor = (
   }, [startAt]);
 
   if (startAt) {
-    if (transport.current.state === 'started') {
-      return { status: 'playing', getBeat, barProps } as const;
+    if (transport.current.state === "started") {
+      return { status: "playing", getBeat, barProps } as const;
     }
-    return { status: 'scheduled', barProps } as const;
+    return { status: "scheduled", barProps } as const;
   }
-  return { status: 'idle', barProps } as const;
+  return { status: "idle", barProps } as const;
 };
 
 export const useTransport = (
@@ -64,7 +64,7 @@ export const useTransport = (
   if (players.current === null)
     players.current = new Tone.Players({
       song: track1.song,
-      clap: '/clap.wav',
+      clap: "/clap.wav",
     }).toDestination();
 
   useEffect(() => {
@@ -73,26 +73,25 @@ export const useTransport = (
 
     // clap
     transport.current.scheduleRepeat((time) => {
-      players.current.player('clap').start(time);
-      dispatch({ type: 'TICK' });
-    }, '4n');
+      players.current.player("clap").start(time);
+      dispatch({ type: "TICK" });
+    }, "4n");
 
     // song
     transport.current.schedule((time) => {
-      players.current.player('song').loop = true;
-      players.current.player('song').volume.value = track1.volume;
-      players.current.player('song').setLoopPoints(...track1.loopPoints);
-      players.current.player('song').start(time, 0);
+      players.current.player("song").loop = true;
+      players.current.player("song").volume.value = track1.volume;
+      players.current.player("song").setLoopPoints(...track1.loopPoints);
+      players.current.player("song").start(time, 0);
       draw.current.schedule(() => {
         setBarProps({ time: time, bpm: transport.current.bpm.value });
       }, time);
     }, `+${track1.offset}n`);
 
-    console.log({ startAt });
     transport.current.start(`+${(startAt - now()) / 1000}`);
 
     return function cleanup() {
-      if (transport.current.state === 'started') {
+      if (transport.current.state === "started") {
         transport.current.stop();
       }
     };
