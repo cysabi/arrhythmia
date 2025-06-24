@@ -1,3 +1,4 @@
+import { getWinAvatar } from "../board/entities";
 import type { GameState, Player } from "../types";
 import { Health } from "./health";
 
@@ -10,11 +11,19 @@ export function Hud({
   const self = gameState.entities.find(
     (entity) => entity.type === "player" && entity.you == true
   ) as Player;
+
   return (
-    <>
-      <div className="bottom 0vh">
+    <div className="flex items-center gap-4">
+      <div className="h-24">
+        {self.avatarId ? (
+          <img className="h-full" src="/binkiwin.svg" alt="player1" />
+        ) : (
+          <img className="h-full" src="/hemmetwin.svg" alt="player2" />
+        )}
+      </div>
+      <div className="translate-y-3">
         <Health player={self} size="big" />
       </div>
-    </>
+    </div>
   );
 }

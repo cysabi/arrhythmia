@@ -38,7 +38,7 @@ export function Health({
   // Determine visibility classes
   const shouldBeVisible = !onPlayer || isFlashing;
 
-  const baseClasses = `absolute flex items-center cursor-pointer ${SIZER[size]}`;
+  const baseClasses = `flex items-center cursor-pointer ${SIZER[size]}`;
   const visibilityClasses = shouldBeVisible ? "opacity-100" : "opacity-0";
   const flashEffect = isFlashing ? "animate-pulse" : "";
 

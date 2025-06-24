@@ -5,7 +5,6 @@ import { StartScreen } from "./views/startScreen";
 import { GameOverScreen } from "./views/gameOverScreen";
 import { Hud } from "./hud/hud";
 import type { GameState, Player } from "./types";
-import OpponentHealth from "./hud/opponentHealth";
 
 const getWinner = (view: GameState): Player | null => {
   const { entities } = view;
@@ -26,10 +25,10 @@ function App() {
     return <StartScreen status={conductor.status} send={ws.send} />;
   }
 
-  const winner = getWinner(view);
-  if (winner) {
-    return <GameOverScreen winner={winner}></GameOverScreen>;
-  }
+  // const winner = getWinner(view);
+  // if (winner) {
+  //   return <GameOverScreen winner={winner}></GameOverScreen>;
+  // }
 
   return (
     <div className="h-svh w-svw flex flex-col">
@@ -38,17 +37,23 @@ function App() {
       <div className="flex items-center justify-center h-[80svh]">
         <Board gameState={view} tooltipData={tooltipData} />
       </div>
-      <div className="20svh">
-        <Hud devFlag={false} gameState={view} />
+      <div className="20svh w-[80svh] mx-auto -translate-y-10">
         <BeatBar barProps={conductor.barProps} />
-        <div className="flex gap-4">
-          <Ability num="1" name="projectile-basic" cooldown={cooldowns.basic} />
-          <Ability num="2" name="projectile-bomb" cooldown={cooldowns.bomb} />
-          <Ability
-            num="3"
-            name="projectile-asplode2"
-            cooldown={cooldowns.diag_cross}
-          />
+        <div className="flex items-center justify-between">
+          <Hud devFlag={false} gameState={view} />
+          <div className="flex gap-4">
+            <Ability
+              num="1"
+              name="projectile-basic"
+              cooldown={cooldowns.basic}
+            />
+            <Ability num="2" name="projectile-bomb" cooldown={cooldowns.bomb} />
+            <Ability
+              num="3"
+              name="projectile-asplode2"
+              cooldown={cooldowns.diag_cross}
+            />
+          </div>
         </div>
       </div>
     </div>
