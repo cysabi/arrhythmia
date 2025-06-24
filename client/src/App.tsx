@@ -5,6 +5,7 @@ import { StartScreen } from "./views/startScreen";
 import { GameOverScreen } from "./views/gameOverScreen";
 import { Hud } from "./hud/hud";
 import type { GameState, Player } from "./types";
+import OpponentHealth from "./hud/opponentHealth";
 
 const getWinner = (view: GameState): Player | null => {
   const { entities } = view;
@@ -32,6 +33,7 @@ function App() {
 
   return (
     <div className="h-svh w-svw flex flex-col">
+      <OpponentHealth gameState={view} />
       <div className="flex-grow">
         <Board gameState={view} tooltipData={tooltipData} />
         <Hud devFlag={false} gameState={view} />

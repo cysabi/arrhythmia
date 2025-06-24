@@ -9,7 +9,8 @@ const Board = ({
   tooltipData: { playerId: string; feedback: string };
 }) => {
   return (
-    <div className="flex items-center justify-center h-full max-h-screen max-w-screen p-2">
+    <div className="flex items-center justify-center h-80vh max-w-screen p-2">
+      {/* <div className="flex items-center justify-center h-full max-h-screen max-w-screen p-2"> */}
       <div
         className="grid max-h-full max-w-full aspect-square"
         style={{
