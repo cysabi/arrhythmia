@@ -30,8 +30,15 @@ export function BeatBar({
           animationTimingFunction: "linear",
         }}
       ></div>
-      <div className="absolute inset-0 flex justify-center">
-        <img src="/heartgem.svg" />
+      <div className="absolute inset-0 flex items-center justify-center h-10">
+        <div className={styles.Heart}
+          style={{
+            animationDuration: `${duration}s`,
+            animationIterationCount: "infinite",
+            animationDelay: `${barProps.time % duration}s`,
+            animationTimingFunction: "ease-out",
+        }}
+        ><img src="/heartgem.svg" alt="heartbeat" className="h-15 w-15"/></div>
       </div>
     </div>
   );
