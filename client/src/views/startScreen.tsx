@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Skull } from "../board/entities";
 import styles from "./views.module.css";
 
 export const StartScreen = ({
@@ -41,8 +40,8 @@ export const StartScreen = ({
           )}
           {!playerVisible && (
             <>
-              <img src="/skull.svg" alt="skull" className="w-40 h-40"/>
-              <img src="/skull.svg" alt="skull" className="w-40 h-40"/>
+              <img src="/skull.svg" alt="skull" className="w-40 h-40" />
+              <img src="/skull.svg" alt="skull" className="w-40 h-40" />
             </>
           )}
         </div>
