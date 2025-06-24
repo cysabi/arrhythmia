@@ -14,7 +14,7 @@ export function FancyHeart({
     <div className={SIZER[size]} style={style}>
       <img
         style={{ scale: 2 }}
-        src="heart.svg"
+        src="/heart.svg"
         alt="fancy-heart"
         className="w-full h-full object-contain"
       />

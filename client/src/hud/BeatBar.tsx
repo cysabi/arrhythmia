@@ -31,14 +31,17 @@ export function BeatBar({
         }}
       ></div>
       <div className="absolute inset-0 flex items-center justify-center h-10">
-        <div className={styles.Heart}
+        <div
+          className={styles.Heart}
           style={{
             animationDuration: `${duration}s`,
             animationIterationCount: "infinite",
             animationDelay: `${barProps.time % duration}s`,
             animationTimingFunction: "ease-out",
-        }}
-        ><img src="/heartgem.svg" alt="heartbeat" className="h-15 w-15"/></div>
+          }}
+        >
+          <img src="/heartgem.svg" alt="heartbeat" className="h-15 w-15" />
+        </div>
       </div>
     </div>
   );
