@@ -8,7 +8,7 @@ export function Hud({
   gameState: GameState;
 }) {
   const self = gameState.entities.find(
-    (entity) => entity.type === "player" && entity.you == true
+    (entity) => entity.type === "player" && entity.you == true,
   ) as Player;
   return <Health player={self} size="big" />;
 }

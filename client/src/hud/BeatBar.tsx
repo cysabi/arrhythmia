@@ -1,6 +1,6 @@
 import styles from "./beatbar.module.css";
 
-export function BeatBarSpawner({
+export function BeatBar({
   barProps,
 }: {
   barProps: { time: number; bpm: number };
