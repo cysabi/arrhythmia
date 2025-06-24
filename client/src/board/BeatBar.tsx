@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 interface BeatBarProps {
   id: number;
@@ -30,19 +30,19 @@ export function BeatBar({ duration }: BeatBarProps) {
   return (
     <>
       <img
-        src="beat-bar.svg"
-        className="absolute h-full"
+        src='beat-bar.svg'
+        className='absolute h-full'
         style={{
           left: `${leftBarLeftPercent}%`,
-          transform: "translateX(-50%)",
+          transform: 'translateX(-50%)',
         }}
       />
       <img
-        src="beat-bar.svg"
-        className="absolute h-full"
+        src='beat-bar.svg'
+        className='absolute h-full'
         style={{
           left: `${rightBarLeftPercent}%`,
-          transform: "translateX(-50%)",
+          transform: 'translateX(-50%)',
         }}
       />
     </>

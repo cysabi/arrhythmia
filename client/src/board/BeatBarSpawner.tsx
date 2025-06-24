@@ -1,45 +1,40 @@
-import { useEffect, useState } from 'react';
-import { BeatBar } from './BeatBar';
-import { useTransport } from '../client/useConductor';
-import useGameState from '../client/useGameState';
+import styles from './beatbar.module.css';
 
-const interval = 600; // ms
-const duration = 2; // sec
-
-export function BeatBarSpawner() {
-  const [state, dispatch] = useGameState();
-  const [bars, setBars] = useState<{ id: number }[]>([]);
-
-  const spawn = () => {
-    const id = Date.now();
-    setBars((prev) => [...prev, { id }]);
-  };
-
-  console.log(`${state.startAt}`);
-
-  useTransport(state.startAt, spawn);
-
-  // useEffect(() => {
-
-  //   // const timer = setInterval(spawn, interval);
-
-  //   return () => clearInterval(timer);
-  // }, []);
-
-  useEffect(() => {
-    const cleanup = setInterval(() => {
-      const now = Date.now();
-      setBars((prev) => prev.filter((bar) => now - bar.id < duration * 1000));
-    }, 1000);
-    return () => clearInterval(cleanup);
-  }, []);
+export function BeatBarSpawner({
+  barProps,
+}: {
+  barProps: { time: number; bpm: number };
+}) {
+  const duration = 60 / barProps.bpm;
 
   return (
-    <div className='fixed bottom-0 z-50 w-full'>
-      <div className='relative w-full h-20 bg-black overflow-hidden'>
-        {bars.map((bar) => (
-          <BeatBar key={bar.id} id={bar.id} duration={duration} />
-        ))}
+    <div className='z-50 w-full flex relative'>
+      <div
+        className={`flex-1 h-10 overflow-hidden ${styles.Bar}`}
+        style={{
+          backgroundImage: `url("/Sprite-0001.svg")`,
+          backgroundSize: '50px 100%',
+          // backgroundPositionX: '200px',
+          animationDuration: `${duration}s`,
+          animationIterationCount: 'infinite',
+          animationDelay: `${barProps.time % duration}s`,
+          animationTimingFunction: 'linear',
+        }}
+      ></div>
+      <div
+        className={`flex-1 h-10 overflow-hidden ${styles.Bar} rotate-180`}
+        style={{
+          backgroundImage: `url("/Sprite-0001.svg")`,
+          backgroundSize: '50px 100%',
+          // backgroundPositionX: '200px',
+          animationDuration: `${duration}s`,
+          animationIterationCount: 'infinite',
+          animationDelay: `${barProps.time % duration}s`,
+          animationTimingFunction: 'linear',
+        }}
+      ></div>
+      <div className='absolute inset-0 flex justify-center'>
+        <div className='w-2 bg-blue-400'></div>
       </div>
     </div>
   );

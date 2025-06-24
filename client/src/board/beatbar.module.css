@@ -1,0 +1,19 @@
+@keyframes bar-kf {
+  0% {
+    background-position-x: 0px;
+  }
+
+  100% {
+    /* transform: translateX(calc(50vw)); */
+    /* transform: translateX(50%); */
+    background-position-x: 50px;
+  }
+}
+
+.Bar {
+  animation-name: bar-kf;
+  height: full;
+  /* transform: scale(0.8); */
+  left: 50%;
+  top: 50%;
+}
