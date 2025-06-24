@@ -9,6 +9,11 @@ const initialState = {
   snapshot: initGame(),
   validated: [],
   optimistic: [],
+  cooldowns: {
+    basic: 1,
+    bomb: 2,
+    diag_cross: 3,
+  },
   startAt: null,
 };
 
@@ -40,12 +45,16 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "INPUT": {
-      const optimistic = [...state.optimistic, event.payload];
-      return { ...state, optimistic };
-    }
+      console.log("input", state.cooldowns);
+      let ability = event.payload.projectileType;
+      let cooldowns = { ...state.cooldowns };
+      if (ability) {
+        cooldowns[ability] = initialState.cooldowns[ability];
+      }
 
-    case "FEEDBACK": {
-      return { ...state, feedback: event.payload };
+      const optimistic = [...state.optimistic, event.payload];
+      console.log("input", cooldowns);
+      return { ...state, optimistic, cooldowns };
     }
 
     case "FEEDBACK": {
@@ -53,7 +62,10 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "TICK": {
-      return { ...state, turnCount: state.turnCount + 1 };
+      console.log("tick", state.cooldowns);
+      const cooldowns = updateCooldowns(state);
+      console.log("tick", cooldowns);
+      return { ...state, turnCount: state.turnCount + 1, cooldowns };
     }
   }
 };
@@ -65,7 +77,7 @@ const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,
-      snapshotTurnCount,
+      snapshotTurnCount
     );
     state.validated = [];
   }
@@ -85,6 +97,22 @@ const updateValidated = (state: ClientState, payload: ActionPayload) => {
   return state;
 };
 
+const updateCooldowns = (state: ClientState) => {
+  return (
+    Object.keys(state.cooldowns) as [keyof ClientState["cooldowns"]]
+  ).reduce(
+    (res, key) => {
+      if (state.cooldowns[key] > 0) {
+        res[key] = state.cooldowns[key] - 1;
+      } else {
+        res[key] = 0;
+      }
+      return res;
+    },
+    {} as ClientState["cooldowns"]
+  );
+};
+
 export interface ClientState {
   playerId: string;
   turnCount: number;
@@ -93,6 +121,7 @@ export interface ClientState {
   validated: ActionPayload[];
   optimistic: ActionPayload[];
   startAt: number | null;
+  cooldowns: { basic: number; bomb: number; diag_cross: number };
 }
 
 export type ClientEvent =
