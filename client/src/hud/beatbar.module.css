@@ -17,3 +17,17 @@
   left: 50%;
   top: 50%;
 }
+
+@keyframes heart-kf {
+  0% {
+    scale: 1.5;
+  }
+
+  100% {
+    scale: 1;
+  }
+}
+
+.Heart {
+  animation-name: heart-kf;
+}

@@ -75,7 +75,7 @@ export const Skull = () => {
 };
 
 export const Wall = () => {
-  return <img src="/floor.svg" alt="wall" />;
+  return <img src="/wall.svg" alt="wall" />;
 };
 
 export const getPlayerNumber = (
