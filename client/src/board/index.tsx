@@ -19,6 +19,9 @@ const Board = ({
           gridTemplateRows: `repeat(${gameState.map.height}, ${
             100 / gameState.map.height
           }%)`,
+          backgroundImage: 'url("/grass tile.png")',
+          backgroundRepeat: "repeat",
+          backgroundSize: `${100 / gameState.map.width}% ${100 / gameState.map.height}%`,
         }}
       >
         {gameState.entities.map((entity) => (
