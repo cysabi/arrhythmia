@@ -12,7 +12,7 @@ export function Hud({
   ) as Player;
   return (
     <>
-      <div className="absolute bottom-0">
+      <div className="bottom 0vh">
         <Health player={self} size="big" />
       </div>
     </>
