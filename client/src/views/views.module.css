@@ -9,9 +9,14 @@
 }
 
 .Title {
+  text-align: center;
   font-size: 100px;
   font-weight: 400;
   color: grey;
+  line-height: 1.2em;
+  text-shadow:
+    5px 5px #365dbf,
+    -5px -5px rgb(177, 82, 160);
 }
 
 .Subtitle {

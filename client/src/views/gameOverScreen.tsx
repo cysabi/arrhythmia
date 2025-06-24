@@ -9,11 +9,12 @@ export const GameOverScreen = ({ winner }: { winner: Player }) => {
     <div
       className={`flex justify-center items-center w-screen h-screen ${styles.Background}`}
     >
-      <div className="flex-col items-center gap-5">
+      <div className="flex flex-col items-center gap-5">
         <div className={`text-center ${styles.Title}`}>GAME OVER</div>
-        <div
-          className={`text-center ${styles.Subtitle}`}
-        > {  `${you ? "YOU WIN!" : "YOU LOSE" }` } </div>
+        <div className={`text-center ${styles.Subtitle}`}>
+          {" "}
+          {`${you ? "YOU WIN!" : "YOU LOSE"}`}{" "}
+        </div>
         <div className={`flex justify-center`}>{getWinAvatar(avatarId)}</div>
       </div>
     </div>
