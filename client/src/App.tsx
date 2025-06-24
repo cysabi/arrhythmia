@@ -1,6 +1,6 @@
 import useClient from "./client/useClient";
 import Board from "./board";
-import { BeatBarSpawner } from "./board/BeatBarSpawner";
+import { BeatBarSpawner } from "./hud/BeatBar";
 import { StartScreen } from "./views/startScreen";
 import { GameOverScreen } from "./views/gameOverScreen";
 import { Hud } from "./hud/hud";
@@ -36,7 +36,7 @@ function App() {
         <Board gameState={view} tooltipData={tooltipData} />
         <Hud devFlag={false} gameState={view} />
       </div>
-      <BeatBarSpawner />
+      <BeatBarSpawner barProps={conductor.barProps} />
     </div>
   );
 }

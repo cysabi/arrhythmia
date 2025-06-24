@@ -29,7 +29,7 @@ export const Player = ({
           </div>
         </div>
       )}
-      <Health player={entity} size="smol" hoverOnly={true} />
+      <Health player={entity} size="smol" onPlayer={true} />
       <div style={{ rotate }}>{getAvatar(avatarId)}</div>
     </div>
   );
