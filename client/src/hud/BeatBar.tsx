@@ -7,7 +7,7 @@ export function BeatBar({
 }) {
   const duration = 60 / barProps.bpm;
   return (
-    <div className="z-50 w-full flex relative">
+    <div className="z-50 w-full h-20vh flex relative">
       <div
         className={`flex-1 h-10 overflow-hidden ${styles.Bar}`}
         style={{

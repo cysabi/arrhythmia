@@ -13,7 +13,8 @@ export function FancyHeart({
   return (
     <div className={SIZER[size]} style={style}>
       <img
-        src="/hearts/4-4.svg"
+        style={{ scale: 2 }}
+        src="heart.svg"
         alt="fancy-heart"
         className="w-full h-full object-contain"
       />
