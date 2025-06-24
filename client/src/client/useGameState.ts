@@ -49,7 +49,10 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       let ability = event.payload.projectileType;
       let cooldowns = { ...state.cooldowns };
       if (ability) {
-        cooldowns[ability] = initialState.cooldowns[ability];
+        cooldowns[ability] =
+          initialState.cooldowns[ability] +
+          (event.payload.turnCount - state.turnCount) +
+          1;
       }
 
       const optimistic = [...state.optimistic, event.payload];

@@ -41,16 +41,45 @@ function App() {
       <div className="20svh">
         <Hud devFlag={false} gameState={view} />
         <BeatBar barProps={conductor.barProps} />
-        <div className="flex flex-col">
-          <div className="flex">basic | cooldown: {cooldowns.basic}</div>
-          <div className="flex">bomb | cooldown: {cooldowns.bomb}</div>
-          <div className="flex">
-            diag_cross | cooldown: {cooldowns.diag_cross}
-          </div>
+        <div className="flex gap-4">
+          <Ability num="1" name="projectile-basic" cooldown={cooldowns.basic} />
+          <Ability num="2" name="projectile-bomb" cooldown={cooldowns.bomb} />
+          <Ability
+            num="3"
+            name="projectile-asplode2"
+            cooldown={cooldowns.diag_cross}
+          />
         </div>
       </div>
     </div>
   );
 }
+
+const Ability = ({
+  num,
+  name,
+  cooldown,
+}: {
+  num: string;
+  name: string;
+  cooldown: number;
+}) => {
+  return (
+    <div className="flex flex-col gap-1 items-center font-['Press_Start_2P']">
+      <div className="text-[#808080]">{num}</div>
+      <div className="flex h-16 w-16 border-2 border-[#808080] relative items-center justify-center">
+        <img
+          className="h-full w-full"
+          src={`/${name}.svg`}
+          style={{
+            opacity: cooldown > 0 ? "0.5" : "1",
+            filter: cooldown > 0 ? "grayscale(1)" : "",
+          }}
+        />
+        {cooldown > 0 && <div className="absolute text-xl">{cooldown}</div>}
+      </div>
+    </div>
+  );
+};
 
 export default App;
