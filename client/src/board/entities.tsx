@@ -1,3 +1,4 @@
+import { BOMB_TIME } from "../client/gameDefaults";
 import { Health } from "../hud/health";
 import type { Entity } from "../types";
 
@@ -41,16 +42,26 @@ export const Player = ({
 
 export const Projectile = ({
   entity,
+  turnCount,
 }: {
   entity: Extract<Entity, { type: "projectile" }>;
+  turnCount: number;
 }) => {
   const dir = [entity.facing];
   if (entity.diagFacing) dir.push(entity.diagFacing);
   dir.sort();
 
+  let frame = "";
+
+  if (
+    entity.projectileType === "bomb" &&
+    entity.birthTurn - turnCount < -BOMB_TIME
+  )
+    frame = "2";
+
   return (
     <img
-      src="/fireballtail.svg"
+      src={`/projectile-${entity.projectileType}${frame}.svg`}
       alt="A projectile"
       style={{
         rotate: `${

@@ -38,7 +38,9 @@ const Board = ({
             {entity.type === "player" && (
               <Player entity={entity} tooltipData={tooltipData} />
             )}
-            {entity.type === "projectile" && <Projectile entity={entity} />}
+            {entity.type === "projectile" && (
+              <Projectile entity={entity} turnCount={gameState.turnCount} />
+            )}
             {entity.type === "wall" && <Wall />}
           </div>
         ))}
