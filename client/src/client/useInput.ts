@@ -18,8 +18,6 @@ const useInput = (
       return dispatch({ type: "FEEDBACK", payload: "already moved!" });
     }
 
-    console.log(state.cooldowns);
-
     const payload = {
       action,
       turnCount: beat,

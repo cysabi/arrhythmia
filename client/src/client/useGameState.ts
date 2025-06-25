@@ -45,7 +45,6 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "INPUT": {
-      console.log("input", state.cooldowns);
       let ability = event.payload.projectileType;
       let cooldowns = { ...state.cooldowns };
       if (ability) {
@@ -56,7 +55,6 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       }
 
       const optimistic = [...state.optimistic, event.payload];
-      console.log("input", cooldowns);
       return { ...state, optimistic, cooldowns };
     }
 
@@ -65,9 +63,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "TICK": {
-      console.log("tick", state.cooldowns);
       const cooldowns = updateCooldowns(state);
-      console.log("tick", cooldowns);
       return { ...state, turnCount: state.turnCount + 1, cooldowns };
     }
   }

@@ -5,8 +5,6 @@ import type { ClientEvent } from "./useGameState";
 const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
   const onMessage = useCallback(
     (data: string) => {
-      console.log({ payload: data.split(";") });
-
       const payload = data.split(";");
       const type = payload.shift()!;
 
@@ -52,7 +50,6 @@ const useRawConnection = (onMessage: (data: string) => void) => {
   const [connected, setConnected] = React.useState(false);
 
   React.useEffect(() => {
-    console.log("WS URL IS", import.meta.env.VITE_SERVER_WS_URL);
     ws.current = new WebSocket(import.meta.env.VITE_SERVER_WS_URL);
 
     ws.current.addEventListener("open", () => {
