@@ -30,7 +30,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
       return {
         ...initialState,
         playerId,
-        snapshot: initGame({ playerId, peerIds }),
+        snapshot: initGame({ playerId, peerIds: peerIds.slice(-3) }), // FIXME: .slice stupid hack
         startAt,
       };
     }
