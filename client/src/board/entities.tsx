@@ -14,6 +14,8 @@ export const Player = ({
   entity: Extract<Entity, { type: "player" }>;
   tooltipData: { playerId: string; feedback: string };
 }) => {
+  const { health } = entity;
+
   const avatarId = assignAvatarId(entity.id);
 
   const rotate = { up: "180deg", down: "0deg", left: "90deg", right: "-90deg" }[
@@ -42,7 +44,9 @@ export const Player = ({
       <div className="absolute inset-0 flex flex-col items-center translate-y-[100%]">
         <Health player={entity} size="smol" onPlayer={true} />
       </div>
-      <div style={{ rotate }}>{getAvatar(avatarId)}</div>
+      <div style={{ rotate }}>
+        {health > 0 ? getAvatar(avatarId) : <Skull />}
+      </div>
     </div>
   );
 };
