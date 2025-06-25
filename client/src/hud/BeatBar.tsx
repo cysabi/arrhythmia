@@ -1,5 +1,6 @@
 import styles from "./beatbar.module.css";
 import heartgem from "/heartgem.svg";
+import beatBar from "/beat-bar.svg";
 
 export function BeatBar({
   barProps,
@@ -12,7 +13,7 @@ export function BeatBar({
       <div
         className={`flex-1 h-10 overflow-hidden ${styles.Bar}`}
         style={{
-          backgroundImage: `url("/beat-bar.svg")`,
+          backgroundImage: `url("${beatBar}")`,
           backgroundSize: "50px 100%",
           animationDuration: `${duration}s`,
           animationIterationCount: "infinite",
@@ -23,7 +24,7 @@ export function BeatBar({
       <div
         className={`flex-1 h-10 overflow-hidden ${styles.Bar} rotate-180`}
         style={{
-          backgroundImage: `url("/beat-bar.svg")`,
+          backgroundImage: `url("${beatBar}")`,
           backgroundSize: "50px 100%",
           animationDuration: `${duration}s`,
           animationIterationCount: "infinite",

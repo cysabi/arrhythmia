@@ -1,5 +1,6 @@
 import type { GameState } from "../types";
 import { Player, Projectile, Wall } from "./entities";
+import grassTile from "/grass tile.png";
 
 const Board = ({
   gameState,
@@ -18,7 +19,7 @@ const Board = ({
         gridTemplateRows: `repeat(${gameState.map.height}, ${
           100 / gameState.map.height
         }%)`,
-        backgroundImage: 'url("/grass tile.png")',
+        backgroundImage: `url("${grassTile}")`,
         backgroundRepeat: "repeat",
         backgroundSize: `${100 / gameState.map.width}% ${100 / gameState.map.height}%`,
       }}

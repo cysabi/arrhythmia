@@ -12,7 +12,7 @@ import { DrawClass } from "tone/build/esm/core/util/Draw";
 import song from "/song.wav";
 import clap from "/clap.wav";
 
-const track1 = {
+const track = {
   bpm: 152,
   offset: 0.5,
   volume: -10,
@@ -29,7 +29,7 @@ const useConductor = (
 
   const getBeat = useCallback(() => {
     const spb = 60 / transport.current!.bpm.value;
-    const beatFloat = transport.current.seconds / spb - track1.offset;
+    const beatFloat = transport.current.seconds / spb - track.offset;
 
     const beat = Math.round(beatFloat);
     const offset = beatFloat - beat;
@@ -56,18 +56,13 @@ export const useTransport = (
   const draw = useRef<DrawClass>(null as any);
   if (transport.current === null) {
     transport.current = Tone.getTransport();
-    transport.current.bpm.value = track1.bpm;
-  }
-
-  if (draw.current === null) {
-    draw.current = Tone.getDraw();
-  }
-
-  if (players.current === null)
+    transport.current.bpm.value = track.bpm;
     players.current = new Tone.Players({
-      song: track1.song,
+      song,
       clap,
     }).toDestination();
+    draw.current = Tone.getDraw();
+  }
 
   useEffect(() => {
     if (!startAt) return;
@@ -82,13 +77,13 @@ export const useTransport = (
     // song
     transport.current.schedule((time) => {
       players.current.player("song").loop = true;
-      players.current.player("song").volume.value = track1.volume;
-      players.current.player("song").setLoopPoints(...track1.loopPoints);
+      players.current.player("song").volume.value = track.volume;
+      players.current.player("song").setLoopPoints(...track.loopPoints);
       players.current.player("song").start(time, 0);
       draw.current.schedule(() => {
         setBarProps({ time: time, bpm: transport.current.bpm.value });
       }, time);
-    }, `+${track1.offset}n`);
+    }, `+${track.offset}n`);
 
     transport.current.start(`+${(startAt - now()) / 1000}`);
 

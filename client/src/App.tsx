@@ -5,6 +5,9 @@ import { StartScreen } from "./views/startScreen";
 import { GameOverScreen } from "./views/gameOverScreen";
 import { Hud } from "./hud/hud";
 import type { GameState, Player } from "./types";
+import srcBasic from "/projectile-basic.svg";
+import srcBomb from "/projectile-bomb.svg";
+import srcDiag from "/projectile-asplode2.svg";
 
 const getWinner = (view: GameState): Player | null => {
   const { entities } = view;
@@ -42,17 +45,9 @@ function App() {
         <div className="flex items-center justify-between">
           <Hud devFlag={false} gameState={view} />
           <div className="flex gap-4">
-            <Ability
-              num="1"
-              name="projectile-basic"
-              cooldown={cooldowns.basic}
-            />
-            <Ability num="2" name="projectile-bomb" cooldown={cooldowns.bomb} />
-            <Ability
-              num="3"
-              name="projectile-asplode2"
-              cooldown={cooldowns.diag_cross}
-            />
+            <Ability num="1" src={srcBasic} cooldown={cooldowns.basic} />
+            <Ability num="2" src={srcBomb} cooldown={cooldowns.bomb} />
+            <Ability num="3" src={srcDiag} cooldown={cooldowns.diag_cross} />
           </div>
         </div>
       </div>
@@ -62,11 +57,11 @@ function App() {
 
 const Ability = ({
   num,
-  name,
+  src,
   cooldown,
 }: {
   num: string;
-  name: string;
+  src: string;
   cooldown: number;
 }) => {
   return (
@@ -74,7 +69,7 @@ const Ability = ({
       <div className="flex h-16 w-16 border-2 border-[#808080] relative items-center justify-center">
         <img
           className="h-full w-full"
-          src={`/${name}.svg`}
+          src={src}
           style={{
             opacity: cooldown > 0 ? "0.5" : "1",
             filter: cooldown > 0 ? "grayscale(1)" : "",

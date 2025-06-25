@@ -1,6 +1,11 @@
 import { BOMB_TIME } from "../client/gameDefaults";
 import { Health } from "../hud/health";
 import type { Entity } from "../types";
+import projBasic from "/projectile-basic.svg";
+import projBomb from "/projectile-bomb.svg";
+import projBomb2 from "/projectile-bomb2.svg";
+import projDiag from "/projectile-diag_cross.svg";
+import projAsplode from "/projectile-asplode.svg";
 
 export const Player = ({
   entity,
@@ -53,17 +58,23 @@ export const Projectile = ({
   if (entity.diagFacing) dir.push(entity.diagFacing);
   dir.sort();
 
-  let frame = "";
+  let src = {
+    spread: "",
+    basic: projBasic,
+    bomb: projBomb,
+    diag_cross: projDiag,
+    asplode: projAsplode,
+  }[entity.projectileType];
 
   if (
     entity.projectileType === "bomb" &&
     entity.birthTurn - turnCount < -BOMB_TIME
   )
-    frame = "2";
+    src = projBomb2;
 
   return (
     <img
-      src={`/projectile-${entity.projectileType}${frame}.svg`}
+      src={src}
       alt="A projectile"
       style={{
         rotate: `${
