@@ -47,7 +47,7 @@ const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
 const getWallEntities = (wallPositions: [Position, ID][]) => {
   let wallEntities: Wall[] = [];
   wallPositions.forEach(([position, id]) =>
-    wallEntities.push({ type: "wall", position: position, id: id }),
+    wallEntities.push({ type: "wall", position: position, id: id })
   );
   return wallEntities;
 };
@@ -60,7 +60,7 @@ function getNextPosition(
   direction: Direction,
   currentPosition: Position,
   game: GameState,
-  diagDir?: Direction,
+  diagDir?: Direction
 ): Position {
   const { map, entities } = game;
   let nextPosition: Position = [...currentPosition];
@@ -69,7 +69,7 @@ function getNextPosition(
       (e) =>
         e.type === "wall" ||
         // Treat bombs as walls
-        (e.type === "projectile" && e.projectileType === "bomb"),
+        (e.type === "projectile" && e.projectileType === "bomb")
     )
     .map((e) => e.position);
 
@@ -126,7 +126,7 @@ const orderedDirections: Direction[] = ["up", "right", "down", "left"];
 
 export function applyAction(
   action: ActionPayload,
-  currentState: GameState,
+  currentState: GameState
 ): GameState {
   const { turnCount: turn, entities, map } = currentState;
 
@@ -154,7 +154,7 @@ export function applyAction(
             position: getNextPosition(
               entity.facing,
               entity.position,
-              currentState,
+              currentState
             ),
             facing: entity.facing,
             birthTurn: turn,
@@ -170,7 +170,7 @@ export function applyAction(
                 facing,
                 entity.position,
                 currentState,
-                diagFacing,
+                diagFacing
               );
 
               if (!isSamePosition(position, entity.position)) {
@@ -198,7 +198,7 @@ export function applyAction(
                 projectile.facing,
                 entity.position,
                 currentState,
-                diagFacing,
+                diagFacing
               );
 
               if (!isSamePosition(position, projectile.position)) {
@@ -336,7 +336,10 @@ function tick(game: GameState): GameState {
       const positionIdx = positionToIndex(player.position);
       if (positionsMap.get(positionIdx)) {
         // collision -- overwrite projectile and deal damage
-        positionsMap.set(positionIdx, { ...player, health: player.health - 1 });
+        positionsMap.set(positionIdx, {
+          ...player,
+          health: Math.max(player.health - 1, 0),
+        });
       } else {
         positionsMap.set(positionIdx, { ...player });
       }
@@ -354,7 +357,7 @@ function tick(game: GameState): GameState {
 export function progressGame(
   game: GameState,
   actions: ActionPayload[],
-  desiredTurnCount: number,
+  desiredTurnCount: number
 ): GameState {
   // Apply the given actions and progress any turns that have
   // completed in the action set (projectiles, etc)
@@ -382,7 +385,7 @@ export function initGame(
         playerId: string;
         peerIds: string[];
       }
-    | undefined = undefined,
+    | undefined = undefined
 ): GameState {
   const game = structuredClone(initialState);
   if (props === undefined) return game;

@@ -50,14 +50,16 @@ export function Health({
   const flashEffect = isFlashing ? "animate-pulse" : "";
 
   return (
-    <div className={`${baseClasses} ${visibilityClasses} ${flashEffect}`}>
-      {[...Array(player.health)].map((_, i) => (
-        <FancyHeart
-          key={`heart-${i}`}
-          size={size}
-          style={{ viewTransitionName: `heart-${player.id}-${i}` }}
-        />
-      ))}
-    </div>
+    player.health > 0 && (
+      <div className={`${baseClasses} ${visibilityClasses} ${flashEffect}`}>
+        {[...Array(player.health)].map((_, i) => (
+          <FancyHeart
+            key={`heart-${i}`}
+            size={size}
+            style={{ viewTransitionName: `heart-${player.id}-${i}` }}
+          />
+        ))}
+      </div>
+    )
   );
 }
