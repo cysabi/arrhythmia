@@ -16,6 +16,13 @@ export function Health({
   size: "smol" | "big";
   onPlayer?: boolean;
 }) {
+  if (!player) {
+    player = {
+      health: 5,
+      id: "0",
+    } as any;
+  }
+
   const [isFlashing, setIsFlashing] = useState(false);
   const prevHealth = useRef(player.health);
 

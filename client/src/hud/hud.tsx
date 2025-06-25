@@ -17,7 +17,7 @@ export function Hud({
   return (
     <div className="flex items-center gap-4">
       <div className="h-24">
-        {self.avatarId ? (
+        {self?.avatarId ? (
           <img className="h-full" src={binkiwin} alt="player1" />
         ) : (
           <img className="h-full" src={hemmetwin} alt="player2" />

@@ -5,13 +5,15 @@ import grassTile from "/grass tile.png";
 const Board = ({
   gameState,
   tooltipData,
+  beatBar,
 }: {
   gameState: GameState;
   tooltipData: { playerId: string; feedback: string };
+  beatBar: any;
 }) => {
   return (
     <div
-      className="grid max-h-full max-w-full aspect-square"
+      className="relative grid max-h-full max-w-full aspect-square"
       style={{
         gridTemplateColumns: `repeat(${gameState.map.width}, ${
           100 / gameState.map.width
@@ -47,6 +49,9 @@ const Board = ({
           {entity.type === "wall" && <Wall />}
         </div>
       ))}
+      <div className="absolute inset-0 flex justify-end items-end max-w-[80svh] w-full mt-auto mx-auto">
+        {beatBar}
+      </div>
     </div>
   );
 };

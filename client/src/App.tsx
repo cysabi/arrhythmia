@@ -35,13 +35,14 @@ function App() {
 
   return (
     <div className="h-svh w-svw flex flex-col">
-      {/* <OpponentHealth gameState={view} /> */}
-
       <div className="flex items-center justify-center h-[80svh]">
-        <Board gameState={view} tooltipData={tooltipData} />
+        <Board
+          gameState={view}
+          tooltipData={tooltipData}
+          beatBar={<BeatBar barProps={conductor.barProps} />}
+        />
       </div>
-      <div className="20svh w-[80svh] mx-auto -translate-y-10">
-        <BeatBar barProps={conductor.barProps} />
+      <div className="20svh max-w-[80svh] mx-auto w-full">
         <div className="flex items-center justify-between">
           <Hud devFlag={false} gameState={view} />
           <div className="flex gap-4">
@@ -66,6 +67,7 @@ const Ability = ({
 }) => {
   return (
     <div className="flex flex-col gap-1 items-center font-['Press_Start_2P']">
+      <div className="opacity-0">{num}</div>
       <div className="flex h-16 w-16 border-2 border-[#808080] relative items-center justify-center">
         <img
           className="h-full w-full"
