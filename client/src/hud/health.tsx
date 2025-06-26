@@ -56,7 +56,7 @@ export function Health({
           <FancyHeart
             key={`heart-${i}`}
             size={size}
-            style={{ viewTransitionName: `heart-${player.id}-${i}` }}
+            style={{ viewTransitionName: `${size}-heart-${player.id}-${i}` }}
           />
         ))}
       </div>
