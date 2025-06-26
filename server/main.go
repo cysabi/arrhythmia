@@ -14,92 +14,6 @@ type Game struct {
 	actedThisBeat map[PlayerId]bool
 }
 
-type Lobby struct {
-	id         string
-	player_ids []string
-}
-type WaitingRoom struct {
-	lobbies map[string]Lobby
-}
-
-func (w WaitingRoom) CleanLobbies() {
-	for k, v := range w.lobbies {
-		if len(v.player_ids) == 0 {
-			delete(w.lobbies, k)
-		}
-	}
-
-	lobby_id := w.NextLobbyId()
-
-	w.lobbies[lobby_id] = Lobby{
-		id:         lobby_id,
-		player_ids: []string{},
-	}
-}
-
-func (w WaitingRoom) NextLobbyId() string {
-	for _, c := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
-		_, has_key := w.lobbies[string(c)]
-		if !has_key {
-			return string(c)
-		}
-	}
-
-	// TODO: better error handling
-	return ""
-}
-
-func (w WaitingRoom) AssignPlayer(lobby_id string, pid PlayerId) {
-	lobby := w.lobbies[lobby_id]
-	lobby.player_ids = append(lobby.player_ids, string(pid))
-	w.lobbies[lobby_id] = lobby
-	w.CleanLobbies()
-}
-
-func (w WaitingRoom) LobbyForPlayer(pid PlayerId) Lobby {
-	for _, l := range w.lobbies {
-		for _, s := range l.player_ids {
-			if s == string(pid) {
-				return l
-			}
-		}
-	}
-
-	// TODO: better error case
-	return Lobby{}
-}
-
-func (w WaitingRoom) Start(pid PlayerId) {
-	lobby := w.LobbyForPlayer(pid)
-	delete(w.lobbies, lobby.id)
-}
-
-func (w WaitingRoom) LobbiesPayload() PayloadLobbies {
-	lobbies := []Lobby{}
-	for _, v := range w.lobbies {
-		lobbies = append(lobbies, v)
-	}
-
-	return PayloadLobbies{
-		lobbies: lobbies,
-	}
-}
-
-func (w WaitingRoom) New() WaitingRoom {
-	w = WaitingRoom{
-		lobbies: make(map[string]Lobby),
-	}
-
-	lobby_id := "A"
-
-	w.lobbies[lobby_id] = Lobby{
-		id:         lobby_id,
-		player_ids: []string{},
-	}
-
-	return w
-}
-
 func (g Game) New() Game {
 	g.turnCount = 0
 	g.actedThisBeat = make(map[PlayerId]bool)
@@ -133,7 +47,6 @@ func (g *Game) BroadcastMissing(m *melody.Melody) {
 
 func main() {
 	m := melody.New()
-	game := Game{}.New()
 	waiting_room := WaitingRoom{}.New()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
@@ -141,9 +54,10 @@ func main() {
 	})
 
 	// TODO:
-	// m.HandleDisconnect(func(s *melody.Session) {
-	//
-	// })
+	m.HandleDisconnect(func(s *melody.Session) {
+		pid := s.MustGet("pid").(PlayerId)
+		waiting_room.LobbyForPlayer(pid)
+	})
 
 	m.HandleConnect(func(s *melody.Session) {
 		// Assign player id
@@ -168,17 +82,26 @@ func main() {
 
 		key := s.MustGet("pid")
 		pid := key.(PlayerId)
+		lobby := waiting_room.LobbyForPlayer(pid)
+
+		sessions_in_lobby = make([], PlayerId)
+		for _, s := range sessions {
+			session_p := s.MustGet("pid").(string)
+			// for every session
+			// check if the session pid ===
+		}
+
 		switch payload := receivePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
 			// TODO: CY - only send to members of lobby
-			for payload.turnCount > game.turnCount {
-				game.BroadcastMissing(m)
-				game.actedThisBeat = make(map[PlayerId]bool)
-				game.turnCount += 1
+			for payload.turnCount > lobby.game.turnCount {
+				lobby.game.BroadcastMissing(m)
+				lobby.game.actedThisBeat = make(map[PlayerId]bool)
+				lobby.game.turnCount += 1
 			}
-			if payload.turnCount == game.turnCount {
-				game.actedThisBeat[pid] = true
+			if payload.turnCount == lobby.game.turnCount {
+				lobby.game.actedThisBeat[pid] = true
 				m.Broadcast([]byte(payload.Send()))
 			}
 
@@ -189,28 +112,27 @@ func main() {
 			sessions, _ := m.Sessions()
 
 			// reset state
-			PidReset()
-			game = Game{}.New()
-
-			// make pids
-			pids := make([]string, m.Len())
-			for i, session := range sessions {
-				pid, _ := session.Get("pid")
-				pids[i] = string(pid.(PlayerId))
-			}
+			lobby.game = Game{}.New()
 
 			// set when/them
 			payload.when = fmt.Sprintf("%d",
 				time.Now().Add(2*time.Second).UnixMilli())
-			payload.them = pids
+			payload.them = lobby.player_ids
 
-			// write with you
-			for i, s := range sessions {
-				payload.you = pids[i]
-				s.Write([]byte(payload.Send()))
+			// write to lobby
+			for _, s := range sessions {
+				p := s.MustGet("pid").(string)
+
+				for _, pp := range lobby.player_ids {
+					if pp == p {
+						payload.you = pp
+						s.Write([]byte(payload.Send()))
+					}
+				}
 			}
 
 		case PayloadJoin:
+			// broadcast entire waiting room
 			waiting_room.AssignPlayer(payload.lobby_id, payload.player_id)
 			m.Broadcast([]byte(waiting_room.LobbiesPayload().Send()))
 		}
