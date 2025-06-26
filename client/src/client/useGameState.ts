@@ -47,11 +47,19 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     case "INPUT": {
       let ability = event.payload.projectileType;
       let cooldowns = { ...state.cooldowns };
+
       if (ability) {
-        cooldowns[ability] =
-          initialState.cooldowns[ability] +
-          (event.payload.turnCount - state.turnCount) +
-          1;
+        const isCoolingDown =
+          cooldowns[ability] !== 0 &&
+          cooldowns[ability] < initialState.cooldowns[ability];
+
+        if (!isCoolingDown) {
+          console.log("Here");
+          cooldowns[ability] =
+            initialState.cooldowns[ability] +
+            (event.payload.turnCount - state.turnCount) +
+            1;
+        }
       }
 
       const optimistic = [...state.optimistic, event.payload];
