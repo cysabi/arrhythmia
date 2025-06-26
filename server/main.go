@@ -14,6 +14,15 @@ type Game struct {
 	actedThisBeat map[PlayerId]bool
 }
 
+type Lobby struct {
+	id string
+	player_ids []string
+}
+
+type WaitingRoom struct {
+	lobbies []Lobby
+}
+
 func (g Game) New() Game {
 	g.turnCount = 0
 	g.actedThisBeat = make(map[PlayerId]bool)
@@ -59,7 +68,12 @@ func main() {
 	// })
 
 	m.HandleConnect(func(s *melody.Session) {
+		// Assign player id
+		// Send lobbies
+		pid := PidGenerate()
+		s.Set("pid", pid)
 
+		// TODO: Send lobbies
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -73,11 +87,8 @@ func main() {
 		// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
 		//  broadcast move to other players so they're at most 1 turn behind
 
-		key, exists := s.Get("pid")
-		pid := PlayerId("")
-		if exists {
-			pid = key.(PlayerId)
-		}
+		key, _ := s.Get("pid")
+		pid := key.(PlayerId)
 		switch payload := receivePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
@@ -101,9 +112,8 @@ func main() {
 			// make pids
 			pids := make([]string, m.Len())
 			for i, session := range sessions {
-				pid = PidGenerate()
-				pids[i] = string(pid)
-				session.Set("pid", pid)
+				pid, _ := session.Get("pid")
+				pids[i] = string(pid.(PlayerId))
 			}
 
 			// set when/them
@@ -117,6 +127,10 @@ func main() {
 				s.Write([]byte(payload.Send()))
 			}
 		}
+
+		case PayloadJoin:
+					// TODO: assign pid to lobby
+					// broadcast lobbies
 	})
 
 	const PORT = ":5199"
