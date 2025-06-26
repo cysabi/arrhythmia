@@ -15,6 +15,7 @@ export const Player = ({
   tooltipData: { playerId: string; feedback: string };
 }) => {
   const { health } = entity;
+  const hasHealth = health > 0;
 
   const avatarId = assignAvatarId(entity.id);
 
@@ -32,7 +33,7 @@ export const Player = ({
 
   return (
     <div className="relative group cursor-pointer">
-      {entity.id === playerId && (
+      {entity.id === playerId && hasHealth && (
         <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
           <div
             className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
@@ -45,7 +46,7 @@ export const Player = ({
         <Health player={entity} size="smol" onPlayer={true} />
       </div>
       <div style={{ rotate }}>
-        {health > 0 ? getAvatar(avatarId) : <Skull />}
+        {hasHealth ? getAvatar(avatarId) : <Skull />}
       </div>
     </div>
   );
