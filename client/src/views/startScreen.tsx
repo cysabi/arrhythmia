@@ -3,16 +3,34 @@ import styles from "./views.module.css";
 import hemmetcolor from "/hemmetcolor.svg";
 import binkicolor from "/binkicolor.svg";
 import skull from "/skull.svg";
+import type { ClientState } from "../client/useGameState";
 
 export const StartScreen = ({
   status,
+  lobbies,
+  me,
   send,
 }: {
   status: "scheduled" | "idle";
+  lobbies: ClientState["lobbies"];
+  me: string;
   send: WebSocket["send"];
 }) => {
-  const [playerVisible, setPlayerVisible] = useState(true);
+  console.log({ lobbies, me });
+  return (
+    <div
+      className={`flex justify-center items-center w-screen h-screen ${styles.Background}`}
+    >
+      <div className="flex flex-col items-center gap-12">
+        <Title />
+        {status && <Lobbies lobbies={lobbies} me={me} send={send} />}
+      </div>
+    </div>
+  );
+};
 
+const Title = () => {
+  const [playerVisible, setPlayerVisible] = useState(true);
   useEffect(() => {
     let timeoutId: number;
 
@@ -30,33 +48,67 @@ export const StartScreen = ({
   }, []);
 
   return (
-    <div
-      className={`flex justify-center items-center w-screen h-screen ${styles.Background}`}
-    >
-      <div className="flex flex-col items-center gap-5">
-        <div className={`flex justify-center h-36 gap-60 ${styles.Bounce}`}>
-          {playerVisible && (
-            <>
-              <img src={hemmetcolor} alt="player1" className="w-40 h-40" />
-              <img src={binkicolor} alt="player2" className="w-40 h-40" />
-            </>
-          )}
-          {!playerVisible && (
-            <>
-              <img src={skull} alt="skull" className="w-40 h-40" />
-              <img src={skull} alt="skull" className="w-40 h-40" />
-            </>
-          )}
-        </div>
-        <div className={`${styles.Title}`}>BEATDOWN</div>
-        <button
-          className={styles.Button}
-          onClick={() => send("start")}
-          disabled={status === "scheduled"}
-        >
-          {status === "idle" ? "START" : "READY..."}
-        </button>
-      </div>
+    <div className={`flex justify-center h-36 gap-10 ${styles.Bounce}`}>
+      <img src={playerVisible ? hemmetcolor : skull} className="w-40 h-40" />
+      <div className={`translate-y-6 ${styles.Title}`}>BEATDOWN</div>
+      <img src={playerVisible ? binkicolor : skull} className="w-40 h-40" />
+    </div>
+  );
+};
+
+const Lobbies = ({
+  lobbies,
+  me,
+  send,
+}: {
+  lobbies: ClientState["lobbies"];
+  me: string;
+  send: WebSocket["send"];
+}) => {
+  const [hovered, setHovered] = useState("");
+
+  return (
+    <div className="flex flex-col gap-4 w-[800px]">
+      {lobbies.map((lobby) => {
+        const joined = lobby.playerIds.includes(me);
+        return (
+          <button
+            key={lobby.id}
+            className={`flex flex-col justify-between border-4 p-3 gap-4 cursor-pointer hover:border-[#365dbf] ${joined ? "border-[#b152a0]" : "border-[#808080]"}`}
+            onClick={() => {
+              if (!joined) {
+                send(["join", lobby.id].join(";"));
+              } else {
+                send("start");
+              }
+            }}
+            onMouseEnter={() => setHovered(lobby.id)}
+            onMouseLeave={() => setHovered("")}
+          >
+            <div className="text-left uppercase">
+              {hovered === lobby.id ? (
+                <div className="text-[#365dbf]">
+                  {!joined ? "join" : "start"}
+                </div>
+              ) : (
+                <div>Lobby {lobby.id}</div>
+              )}
+            </div>
+            <div className="flex-1 text-left flex text-sm">
+              {lobby.playerIds.map((playerId, i) => {
+                return (
+                  <span key={playerId}>
+                    <span className="text-[#808080]">{i ? ", " : ""}</span>
+                    <span className={playerId === me ? "text-[#b152a0]" : ""}>
+                      {playerId}
+                    </span>
+                  </span>
+                );
+              })}
+            </div>
+          </button>
+        );
+      })}
     </div>
   );
 };

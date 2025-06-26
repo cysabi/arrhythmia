@@ -9,10 +9,10 @@ import projAsplode from "/projectile-asplode.svg";
 
 export const Player = ({
   entity,
-  tooltipData: { feedback, playerId },
+  tooltip,
 }: {
   entity: Extract<Entity, { type: "player" }>;
-  tooltipData: { playerId: string; feedback: string };
+  tooltip?: string;
 }) => {
   const { health } = entity;
   const hasHealth = health > 0;
@@ -23,30 +23,34 @@ export const Player = ({
     entity.facing
   ];
 
-  let color = "text-red-600";
-  if (feedback.includes("early")) {
-    color = "text-cyan-600";
-  }
-  if (feedback.includes("late")) {
-    color = "text-purple-600";
-  }
-
   return (
     <div className="relative group cursor-pointer">
-      {entity.id === playerId && hasHealth && (
-        <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
-          <div
-            className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
-          >
-            {feedback}
-          </div>
-        </div>
-      )}
+      {tooltip && hasHealth && <Tooltip tooltip={tooltip} />}
       <div className="absolute inset-0 flex flex-col items-center translate-y-[100%]">
         <Health player={entity} size="smol" onPlayer={true} />
       </div>
       <div style={{ rotate }}>
         {hasHealth ? getAvatar(avatarId) : <Skull />}
+      </div>
+    </div>
+  );
+};
+
+const Tooltip = ({ tooltip }: { tooltip: string }) => {
+  let color = "text-red-600";
+  if (tooltip.includes("early")) {
+    color = "text-cyan-600";
+  }
+  if (tooltip.includes("late")) {
+    color = "text-purple-600";
+  }
+
+  return (
+    <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
+      <div
+        className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
+      >
+        {tooltip}
       </div>
     </div>
   );

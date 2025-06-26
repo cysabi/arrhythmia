@@ -4,11 +4,13 @@ import grassTile from "/grass tile.png";
 
 const Board = ({
   gameState,
-  tooltipData,
+  playerId,
+  tooltip,
   beatBar,
 }: {
   gameState: GameState;
-  tooltipData: { playerId: string; feedback: string };
+  playerId: string;
+  tooltip: string;
   beatBar: any;
 }) => {
   return (
@@ -41,7 +43,10 @@ const Board = ({
           }}
         >
           {entity.type === "player" && (
-            <Player entity={entity} tooltipData={tooltipData} />
+            <Player
+              entity={entity}
+              tooltip={entity.id === playerId ? tooltip : undefined}
+            />
           )}
           {entity.type === "projectile" && (
             <Projectile entity={entity} turnCount={gameState.turnCount} />

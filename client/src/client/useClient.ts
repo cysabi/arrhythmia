@@ -22,19 +22,13 @@ const useClient = () => {
     );
   }, [state]);
 
-  const tooltipData = useMemo(
-    () => ({
-      playerId: state.playerId,
-      feedback: state.feedback,
-    }),
-    [state.playerId, state.feedback]
-  );
-
   return {
     ws,
     conductor,
     view,
-    tooltipData,
+    playerId: state.playerId,
+    tooltip: state.feedback,
+    lobbies: state.lobbies,
     cooldowns: state.cooldowns,
   } as const;
 };

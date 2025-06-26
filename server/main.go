@@ -15,33 +15,33 @@ type Game struct {
 }
 
 type Lobby struct {
-	id string
+	id         string
 	player_ids []string
 }
 type WaitingRoom struct {
-	lobbies	map[string]Lobby
+	lobbies map[string]Lobby
 }
 
 func (w WaitingRoom) CleanLobbies() {
-	for k,v := range w.lobbies {
+	for k, v := range w.lobbies {
 		if len(v.player_ids) == 0 {
 			delete(w.lobbies, k)
 		}
-	}				
+	}
 
 	lobby_id := w.NextLobbyId()
 
-	w.lobbies[lobby_id] = Lobby {
-		id: lobby_id,
+	w.lobbies[lobby_id] = Lobby{
+		id:         lobby_id,
 		player_ids: []string{},
 	}
 }
 
 func (w WaitingRoom) NextLobbyId() string {
 	for _, c := range "ABCDEFGHIJKLMNOPQRSTUVWXYZ" {
-	  _, has_key := w.lobbies[string(c)]
+		_, has_key := w.lobbies[string(c)]
 		if !has_key {
-		  return string(c)
+			return string(c)
 		}
 	}
 
@@ -50,7 +50,7 @@ func (w WaitingRoom) NextLobbyId() string {
 }
 
 func (w WaitingRoom) AssignPlayer(lobby_id string, pid PlayerId) {
-  lobby := w.lobbies[lobby_id]
+	lobby := w.lobbies[lobby_id]
 	lobby.player_ids = append(lobby.player_ids, string(pid))
 	w.lobbies[lobby_id] = lobby
 	w.CleanLobbies()
@@ -59,14 +59,14 @@ func (w WaitingRoom) AssignPlayer(lobby_id string, pid PlayerId) {
 func (w WaitingRoom) LobbyForPlayer(pid PlayerId) Lobby {
 	for _, l := range w.lobbies {
 		for _, s := range l.player_ids {
-				if s == string(pid) {
-  				return l
-				}
+			if s == string(pid) {
+				return l
+			}
 		}
 	}
 
-  // TODO: better error case
-	return Lobby {}
+	// TODO: better error case
+	return Lobby{}
 }
 
 func (w WaitingRoom) Start(pid PlayerId) {
@@ -75,25 +75,25 @@ func (w WaitingRoom) Start(pid PlayerId) {
 }
 
 func (w WaitingRoom) LobbiesPayload() PayloadLobbies {
-  lobbies := []Lobby{}
+	lobbies := []Lobby{}
 	for _, v := range w.lobbies {
 		lobbies = append(lobbies, v)
 	}
 
-	return PayloadLobbies {
+	return PayloadLobbies{
 		lobbies: lobbies,
 	}
 }
 
 func (w WaitingRoom) New() WaitingRoom {
-	w = WaitingRoom {
+	w = WaitingRoom{
 		lobbies: make(map[string]Lobby),
 	}
 
 	lobby_id := "A"
 
-	w.lobbies[lobby_id] = Lobby {
-		id: lobby_id,
+	w.lobbies[lobby_id] = Lobby{
+		id:         lobby_id,
 		player_ids: []string{},
 	}
 
@@ -152,6 +152,7 @@ func main() {
 		s.Set("pid", pid)
 
 		s.Write([]byte(waiting_room.LobbiesPayload().Send()))
+		s.Write([]byte("start;" + pid))
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -184,7 +185,7 @@ func main() {
 		case PayloadStart:
 			// TODO: CY - only send to members of lobby
 
-			waiting_room.Start(pid);
+			waiting_room.Start(pid)
 			sessions, _ := m.Sessions()
 
 			// reset state
@@ -210,7 +211,6 @@ func main() {
 			}
 
 		case PayloadJoin:
-			// TODO: CY - send this from the client!
 			waiting_room.AssignPlayer(payload.lobby_id, payload.player_id)
 			m.Broadcast([]byte(waiting_room.LobbiesPayload().Send()))
 		}

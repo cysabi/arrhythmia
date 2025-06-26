@@ -18,14 +18,22 @@ const getWinner = (view: GameState): Player | null => {
 };
 
 function App() {
-  const { ws, conductor, view, tooltipData, cooldowns } = useClient();
+  const { ws, conductor, view, playerId, tooltip, lobbies, cooldowns } =
+    useClient();
 
-  if (!ws.connected) {
+  if (!playerId) {
     return "connecting...";
   }
 
   if (conductor.status !== "playing") {
-    return <StartScreen status={conductor.status} send={ws.send} />;
+    return (
+      <StartScreen
+        status={conductor.status}
+        lobbies={lobbies}
+        me={playerId}
+        send={ws.send}
+      />
+    );
   }
 
   const winner = getWinner(view);
@@ -38,7 +46,8 @@ function App() {
       <div className="flex items-center justify-center h-[80svh]">
         <Board
           gameState={view}
-          tooltipData={tooltipData}
+          playerId={playerId}
+          tooltip={tooltip}
           beatBar={<BeatBar barProps={conductor.barProps} />}
         />
       </div>
