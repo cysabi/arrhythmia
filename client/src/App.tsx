@@ -24,14 +24,14 @@ function App() {
     return "connecting...";
   }
 
-  if (conductor.status !== "playing") {
-    return <StartScreen status={conductor.status} send={ws.send} />;
-  }
+  // if (conductor.status !== "playing") {
+  //   return <StartScreen status={conductor.status} send={ws.send} />;
+  // }
 
-  const winner = getWinner(view);
-  if (winner) {
-    return <GameOverScreen winner={winner}></GameOverScreen>;
-  }
+  // const winner = getWinner(view);
+  // if (winner) {
+  //   return <GameOverScreen winner={winner}></GameOverScreen>;
+  // }
 
   return (
     <div className="h-svh w-svw flex flex-col">
