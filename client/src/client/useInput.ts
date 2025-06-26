@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ActionDispatch } from "react";
 import type { ClientEvent, ClientState } from "./useGameState";
-import type { Action, Ability } from "../types";
+import type { Action, Ability, Player } from "../types";
 
 const useInput = (
   state: ClientState,
@@ -11,14 +11,20 @@ const useInput = (
   const actRef = useRef<(a: Action, p?: Ability) => void | null>(null);
 
   actRef.current = (action: Action, projectileType?: Ability) => {
+    const { snapshot } = state;
+    const { entities } = snapshot;
+    const curPlayer: Player | undefined = entities.find(
+      (e): e is Player => e.type === "player" && e.id === state.playerId
+    );
+    if (curPlayer?.health === 0) {
+      return;
+    }
     if (!getBeat) return; // song hasn't started yet
     const { beat, offset } = getBeat();
 
     if (alreadyMoved(state, beat)) {
       return dispatch({ type: "FEEDBACK", payload: "already moved!" });
     }
-
-    console.log(state.cooldowns);
 
     const payload = {
       action,

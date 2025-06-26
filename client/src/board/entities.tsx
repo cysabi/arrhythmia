@@ -14,6 +14,9 @@ export const Player = ({
   entity: Extract<Entity, { type: "player" }>;
   tooltipData: { playerId: string; feedback: string };
 }) => {
+  const { health } = entity;
+  const hasHealth = health > 0;
+
   const avatarId = assignAvatarId(entity.id);
 
   const rotate = { up: "180deg", down: "0deg", left: "90deg", right: "-90deg" }[
@@ -30,7 +33,7 @@ export const Player = ({
 
   return (
     <div className="relative group cursor-pointer">
-      {entity.id === playerId && (
+      {entity.id === playerId && hasHealth && (
         <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
           <div
             className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
@@ -42,7 +45,9 @@ export const Player = ({
       <div className="absolute inset-0 flex flex-col items-center translate-y-[100%]">
         <Health player={entity} size="smol" onPlayer={true} />
       </div>
-      <div style={{ rotate }}>{getAvatar(avatarId)}</div>
+      <div style={{ rotate }}>
+        {hasHealth ? getAvatar(avatarId) : <Skull />}
+      </div>
     </div>
   );
 };
