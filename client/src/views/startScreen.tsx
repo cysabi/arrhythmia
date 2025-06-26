@@ -48,7 +48,7 @@ export const StartScreen = ({
             </>
           )}
         </div>
-        <div className={`${styles.Title}`}>BEATDOWN</div>
+        <div className={`${styles.Title}`}>ARRHYTHMIA</div>
         <button
           className={styles.Button}
           onClick={() => send("start")}

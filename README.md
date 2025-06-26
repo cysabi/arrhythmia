@@ -1,4 +1,4 @@
-# crypt-of-the-duel
+# arrhythmia
 
 ## Running the app locally
 

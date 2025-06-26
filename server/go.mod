@@ -1,4 +1,4 @@
-module github.com/cysabi/crypt-of-the-duel
+module github.com/cysabi/arrhythmia
 
 go 1.24.2
 
