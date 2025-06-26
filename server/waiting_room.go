@@ -1,14 +1,33 @@
 package main
 
-type WaitingRoom struct {
-	lobbies map[string]Lobby
-}
+import "github.com/olahol/melody"
 
 type Lobby struct {
 	id         string
 	player_ids []string
 	joinable   bool
 	game       Game
+}
+
+func (l Lobby) Sessions(m *melody.Melody) []*melody.Session {
+	all_seshs, _ := m.Sessions()
+	sessions := make([]*melody.Session, len(l.player_ids))
+
+	for _, s := range all_seshs {
+		session_pid := s.MustGet("pid").(string)
+
+		for i, lobby_pid := range l.player_ids {
+			if session_pid == lobby_pid {
+				sessions[i] = s
+			}
+		}
+	}
+
+	return sessions
+}
+
+type WaitingRoom struct {
+	lobbies map[string]Lobby
 }
 
 func (w WaitingRoom) CleanLobbies() {
@@ -38,20 +57,20 @@ func (w WaitingRoom) NextLobbyId() string {
 	return ""
 }
 
-func (w WaitingRoom) AssignPlayer(lobby_id string, pid PlayerId) {
+func (w WaitingRoom) AssignPlayer(pid PlayerId, lobby_id string) {
 	lobby := w.lobbies[lobby_id]
 	lobby.player_ids = append(lobby.player_ids, string(pid))
 	w.lobbies[lobby_id] = lobby
 	w.CleanLobbies()
 }
 
-func (w WaitingRoom) DesignPlayer(lobby_id string, pid PlayerId) {
-	lobby := w.lobbies[lobby_id]
+func (w WaitingRoom) DesignPlayer(pid PlayerId) {
+	lobby := w.LobbyForPlayer(pid)
 
 	for i, v := range lobby.player_ids {
 		if v == string(pid) {
 			lobby.player_ids = append(lobby.player_ids[:i], lobby.player_ids[i+1:]...)
-			w.lobbies[lobby_id] = lobby
+			w.lobbies[lobby.id] = lobby
 			w.CleanLobbies()
 		}
 	}
@@ -73,6 +92,7 @@ func (w WaitingRoom) LobbyForPlayer(pid PlayerId) Lobby {
 func (w WaitingRoom) Start(pid PlayerId) {
 	lobby := w.LobbyForPlayer(pid)
 	lobby.joinable = false
+	lobby.game = lobby.game.New()
 	w.lobbies[lobby.id] = lobby
 }
 

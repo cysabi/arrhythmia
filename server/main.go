@@ -20,27 +20,20 @@ func (g Game) New() Game {
 	return g
 }
 
-func (g *Game) BroadcastMissing(m *melody.Melody) {
-	sessions, err := m.Sessions()
-	if err != nil {
-		panic(err)
-	}
-
+func (g Game) BroadcastMissing(sessions []*melody.Session) {
 	for _, session := range sessions {
-		got, exists := session.Get("pid")
-		pid := got.(PlayerId)
-
-		if !exists {
-			continue
-		}
+		pid := session.MustGet("pid").(PlayerId)
 
 		if !g.actedThisBeat[pid] {
 			skipPayload := PayloadAction{
 				pid:       pid,
 				turnCount: g.turnCount,
 				action:    []string{"skip"},
-			}.Send()
-			m.Broadcast([]byte(skipPayload))
+			}
+
+			for _, s := range sessions {
+				s.Write([]byte(skipPayload.Send()))
+			}
 		}
 	}
 }
@@ -53,20 +46,18 @@ func main() {
 		m.HandleRequest(w, r)
 	})
 
-	// TODO:
 	m.HandleDisconnect(func(s *melody.Session) {
 		pid := s.MustGet("pid").(PlayerId)
-		waiting_room.LobbyForPlayer(pid)
+
+		waiting_room.DesignPlayer(pid)
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
-		// Assign player id
-		// Send lobbies
 		pid := PidGenerate()
 		s.Set("pid", pid)
 
-		s.Write([]byte(waiting_room.LobbiesPayload().Send()))
 		s.Write([]byte("start;" + pid))
+		s.Write([]byte(waiting_room.LobbiesPayload().Send()))
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -83,20 +74,13 @@ func main() {
 		key := s.MustGet("pid")
 		pid := key.(PlayerId)
 		lobby := waiting_room.LobbyForPlayer(pid)
-
-		sessions_in_lobby = make([], PlayerId)
-		for _, s := range sessions {
-			session_p := s.MustGet("pid").(string)
-			// for every session
-			// check if the session pid ===
-		}
+		sessions := lobby.Sessions(m)
 
 		switch payload := receivePayload(pid, string(msg)).(type) {
 
 		case PayloadAction:
-			// TODO: CY - only send to members of lobby
 			for payload.turnCount > lobby.game.turnCount {
-				lobby.game.BroadcastMissing(m)
+				lobby.game.BroadcastMissing(sessions)
 				lobby.game.actedThisBeat = make(map[PlayerId]bool)
 				lobby.game.turnCount += 1
 			}
@@ -107,12 +91,7 @@ func main() {
 
 		case PayloadStart:
 			// TODO: CY - only send to members of lobby
-
 			waiting_room.Start(pid)
-			sessions, _ := m.Sessions()
-
-			// reset state
-			lobby.game = Game{}.New()
 
 			// set when/them
 			payload.when = fmt.Sprintf("%d",
@@ -121,19 +100,13 @@ func main() {
 
 			// write to lobby
 			for _, s := range sessions {
-				p := s.MustGet("pid").(string)
-
-				for _, pp := range lobby.player_ids {
-					if pp == p {
-						payload.you = pp
-						s.Write([]byte(payload.Send()))
-					}
-				}
+				payload.you = s.MustGet("pid").(string)
+				s.Write([]byte(payload.Send()))
 			}
 
 		case PayloadJoin:
-			// broadcast entire waiting room
-			waiting_room.AssignPlayer(payload.lobby_id, payload.player_id)
+			// broadcast entire waiting room to everyone
+			waiting_room.AssignPlayer(payload.player_id, payload.lobby_id)
 			m.Broadcast([]byte(waiting_room.LobbiesPayload().Send()))
 		}
 	})
