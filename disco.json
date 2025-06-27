@@ -7,8 +7,8 @@
   },
   "images": {
     "default": {
-      "dockerfile": "Dockerfile",
-      "context": "./server"
+      "dockerfile": "server/Dockerfile",
+      "context": "server/."
     }
   }
 }
