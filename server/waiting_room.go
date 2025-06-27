@@ -8,7 +8,7 @@ type Lobby struct {
 	id         string
 	player_ids []string
 	joinable   bool
-	game       Game
+	game       *Game
 }
 
 func (l Lobby) New(w WaitingRoom) Lobby {
@@ -20,12 +20,13 @@ func (l Lobby) New(w WaitingRoom) Lobby {
 			break
 		}
 	}
+	game := Game{}.New()
 
 	return Lobby{
 		id:         lobby_id,
 		player_ids: []string{},
 		joinable:   true,
-		game:       Game{}.New(),
+		game:       &game,
 	}
 }
 
@@ -104,7 +105,8 @@ func (w WaitingRoom) LobbyForPlayer(pid PlayerId) Lobby {
 func (w WaitingRoom) Start(pid PlayerId) {
 	lobby := w.LobbyForPlayer(pid)
 	lobby.joinable = false
-	lobby.game = lobby.game.New()
+	game := lobby.game.New()
+	lobby.game = &game
 	w.lobbies[lobby.id] = lobby
 }
 
