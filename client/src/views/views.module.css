@@ -1,9 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
-
-:root {
-  font-family: "Press Start 2P", system-ui;
-}
-
 .Background {
   background-size: 100% 100%;
 }
@@ -11,12 +5,12 @@
 .Title {
   text-align: center;
   font-size: 100px;
-  font-weight: 400;
+  font-weight: 800;
   color: grey;
   line-height: 1.2em;
   text-shadow:
-    5px 5px #365dbf,
-    -5px -5px rgb(177, 82, 160);
+    4px 4px #365dbf,
+    -4px -4px #b152a0;
 }
 
 .Subtitle {
@@ -34,7 +28,6 @@
   justify-content: center;
   align-items: center;
 
-  font-family: "Press Start 2P", system-ui;
   font-weight: 400;
   color: white;
   box-shadow:
@@ -53,8 +46,30 @@
   animation: bounce 1s linear infinite;
 }
 
+.Shake {
+  animation: bounce 0.5s ease-out infinite;
+}
+
 @keyframes bounce {
   50% {
     transform: translate(0, 5px);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
   }
 }

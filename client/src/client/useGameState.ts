@@ -91,7 +91,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
 const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
   const snapshotTurnCount =
     state.validated.at(-1)?.turnCount ?? payload.turnCount;
-  if (payload.turnCount > snapshotTurnCount) {
+  if (payload.turnCount > snapshotTurnCount + 1) {
     state.snapshot = progressGame(
       state.snapshot,
       state.validated,

@@ -5,7 +5,4 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineConfig({
   plugins: [tailwindcss(), react()],
   base: "/arrhythmia",
-  preview: {
-    allowedHosts: ["beatdown.jackratner.com"],
-  },
 });

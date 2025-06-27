@@ -67,7 +67,7 @@ const Lobbies = ({
   const [hovered, setHovered] = useState("");
 
   return (
-    <div className="flex flex-col gap-4 w-[800px]">
+    <div className="flex flex-col gap-4 w-[800px] text-2xl font-semibold">
       {lobbies.map((lobby) => {
         const joined = lobby.playerIds.includes(me);
         return (
@@ -84,16 +84,16 @@ const Lobbies = ({
             onMouseEnter={() => setHovered(lobby.id)}
             onMouseLeave={() => setHovered("")}
           >
-            <div className="text-left uppercase">
+            <div className="text-left">
               {hovered === lobby.id ? (
                 <div className="text-[#365dbf]">
-                  {!joined ? "join" : "start"}
+                  {!joined ? "JOIN" : "START"}
                 </div>
               ) : (
-                <div>Lobby {lobby.id}</div>
+                <div>LOBBY {lobby.id}</div>
               )}
             </div>
-            <div className="flex-1 text-left flex text-sm">
+            <div className="flex-1 flex text-xl text-left">
               {lobby.playerIds.map((playerId, i) => {
                 return (
                   <span key={playerId}>

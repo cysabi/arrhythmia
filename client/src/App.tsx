@@ -81,7 +81,7 @@ const Ability = ({
   cooldown: number;
 }) => {
   return (
-    <div className="flex flex-col gap-1 items-center font-['Press_Start_2P']">
+    <div className="flex flex-col gap-1 items-center">
       <div className="opacity-0">{num}</div>
       <div className="flex h-16 w-16 border-2 border-[#808080] relative items-center justify-center">
         <img

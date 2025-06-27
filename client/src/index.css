@@ -1,1 +1,7 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 @import "tailwindcss";
+
+:root {
+  font-family: "Pixelify Sans", system-ui;
+  font-optical-sizing: auto;
+}

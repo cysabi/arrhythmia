@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Player } from "../types";
-import { FancyHeart } from "./fancy-heart";
+import heart from "/heartgem.svg";
+import beatbar from "./beatbar.module.css";
 
 const SIZER = {
   smol: "gap-1 inset-x-0 top-0",
@@ -38,26 +39,40 @@ export function Health({
 
       // Flash effect
       setIsFlashing(true);
-      setTimeout(() => setIsFlashing(false), 2000);
+      setTimeout(() => setIsFlashing(false), 2500);
     }
   }, [player.health]);
 
   // Determine visibility classes
   const shouldBeVisible = !onPlayer || isFlashing;
-
-  const baseClasses = `flex items-center cursor-pointer ${SIZER[size]}`;
+  const baseClasses = `flex items-center ${SIZER[size]}`;
   const visibilityClasses = shouldBeVisible ? "opacity-100" : "opacity-0";
-  const flashEffect = isFlashing ? "animate-pulse" : "";
+  const flashEffect = isFlashing ? beatbar.Shake : "";
 
   return (
     player.health > 0 && (
-      <div className={`${baseClasses} ${visibilityClasses} ${flashEffect}`}>
+      <div className={baseClasses}>
         {[...Array(player.health)].map((_, i) => (
-          <FancyHeart
+          <div
+            style={{
+              viewTransitionName: `${size}-heart-${player.id}-${i}`,
+              animationDelay: `${i * 50}ms`,
+            }}
             key={`heart-${i}`}
-            size={size}
-            style={{ viewTransitionName: `${size}-heart-${player.id}-${i}` }}
-          />
+            className={`${
+              {
+                smol: "h-3 w-3",
+                big: "h-8 w-8",
+              }[size]
+            } ${visibilityClasses} ${flashEffect}`}
+          >
+            <img
+              style={{ scale: 2 }}
+              src={heart}
+              alt="fancy-heart"
+              className="w-full h-full object-contain"
+            />
+          </div>
         ))}
       </div>
     )

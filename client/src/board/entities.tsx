@@ -47,9 +47,7 @@ const Tooltip = ({ tooltip }: { tooltip: string }) => {
 
   return (
     <div className="absolute inset-0 -translate-y-full flex items-end justify-center text-center">
-      <div
-        className={`whitespace-nowrap font-['Press_Start_2P'] uppercase text-xs ${color}`}
-      >
+      <div className={`whitespace-nowrap uppercase text-xs ${color}`}>
         {tooltip}
       </div>
     </div>
