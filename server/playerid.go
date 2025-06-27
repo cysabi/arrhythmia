@@ -11,7 +11,7 @@ type PlayerId string
 
 func PidGenerate() PlayerId {
 	pidCounter.Add(1)
-	return PlayerId(fmt.Sprintf("playerid_%d", pidCounter.Load()))
+	return PlayerId(fmt.Sprintf("player_%d", pidCounter.Load()))
 }
 
 func PidReset() {

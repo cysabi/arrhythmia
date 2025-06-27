@@ -50,6 +50,7 @@ func main() {
 		pid := s.MustGet("pid").(PlayerId)
 
 		waiting_room.DesignPlayer(pid)
+		waiting_room.CleanLobbies()
 	})
 
 	m.HandleConnect(func(s *melody.Session) {
@@ -57,7 +58,7 @@ func main() {
 		s.Set("pid", pid)
 
 		s.Write([]byte("start;" + pid))
-		s.Write([]byte(waiting_room.LobbiesPayload().Send()))
+		s.Write([]byte(waiting_room.Payload().Send()))
 	})
 
 	m.HandleMessage(func(s *melody.Session, msg []byte) {
@@ -71,8 +72,7 @@ func main() {
 		// 	if player turn is on game turn, set actedThisBeat and broadcast move to other players
 		//  broadcast move to other players so they're at most 1 turn behind
 
-		key := s.MustGet("pid")
-		pid := key.(PlayerId)
+		pid := s.MustGet("pid").(PlayerId)
 		lobby := waiting_room.LobbyForPlayer(pid)
 		sessions := lobby.Sessions(m)
 
@@ -100,14 +100,16 @@ func main() {
 
 			// write to lobby
 			for _, s := range sessions {
-				payload.you = s.MustGet("pid").(string)
+				payload.you = string(s.MustGet("pid").(PlayerId))
 				s.Write([]byte(payload.Send()))
 			}
 
 		case PayloadJoin:
 			// broadcast entire waiting room to everyone
+			waiting_room.DesignPlayer(payload.player_id)
 			waiting_room.AssignPlayer(payload.player_id, payload.lobby_id)
-			m.Broadcast([]byte(waiting_room.LobbiesPayload().Send()))
+			waiting_room.CleanLobbies()
+			m.Broadcast([]byte(waiting_room.Payload().Send()))
 		}
 	})
 

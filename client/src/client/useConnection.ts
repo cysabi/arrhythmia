@@ -11,7 +11,7 @@ const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {
       switch (type) {
         case "lobbies":
           // lobbyid|playerid,playerid2;lobbyid2|playerid3,playerid4
-          const lobbies = payload.map((s) => {
+          const lobbies = payload.sort().map((s) => {
             const [lobbyId, playersStr, ..._] = s.split("|");
             return {
               id: lobbyId,

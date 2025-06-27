@@ -20,9 +20,16 @@ const getWinner = (view: GameState): Player | null => {
 function App() {
   const { ws, conductor, view, playerId, tooltip, lobbies, cooldowns } =
     useClient();
+  console.log({ lobbies });
 
   if (!playerId) {
-    return "connecting...";
+    return (
+      <div className={`flex justify-center items-center w-screen h-screen`}>
+        <div className="flex flex-col items-center gap-5">
+          <div className={`text-center`}>connecting...</div>
+        </div>
+      </div>
+    );
   }
 
   if (conductor.status !== "playing") {
