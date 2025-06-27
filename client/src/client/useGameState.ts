@@ -55,7 +55,6 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
           cooldowns[ability] < initialState.cooldowns[ability];
 
         if (!isCoolingDown) {
-          console.log("Here");
           cooldowns[ability] =
             initialState.cooldowns[ability] +
             (event.payload.turnCount - state.turnCount) +

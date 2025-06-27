@@ -20,7 +20,6 @@ const getWinner = (view: GameState): Player | null => {
 function App() {
   const { ws, conductor, view, playerId, tooltip, lobbies, cooldowns } =
     useClient();
-  console.log({ lobbies });
 
   if (!playerId) {
     return (

@@ -16,7 +16,6 @@ export const StartScreen = ({
   me: string;
   send: WebSocket["send"];
 }) => {
-  console.log({ lobbies, me });
   return (
     <div
       className={`flex justify-center items-center w-screen h-screen ${styles.Background}`}
