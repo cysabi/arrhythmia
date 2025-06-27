@@ -37,12 +37,19 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     }
 
     case "RECEIVED_ACTION": {
-      let s = structuredClone(state);
+      const optimistic = [...state.optimistic];
+      const { snapshot, validated } = updateSnapshot(
+        state.snapshot,
+        state.validated,
+        event.payload.turnCount - 1
+      );
 
-      s = updateSnapshot(s, event.payload);
-      s = updateValidated(s, event.payload);
+      validated.push(event.payload);
+      if (event.payload.playerId === state.playerId) {
+        optimistic.shift();
+      }
 
-      return s;
+      return { ...state, snapshot, validated, optimistic };
     }
 
     case "INPUT": {
@@ -88,31 +95,16 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
   }
 };
 
-const updateSnapshot = (state: ClientState, payload: ActionPayload) => {
-  const snapshotTurnCount =
-    state.validated.at(-1)?.turnCount ?? payload.turnCount;
-  if (payload.turnCount > snapshotTurnCount + 1) {
-    state.snapshot = progressGame(
-      state.snapshot,
-      state.validated,
-      snapshotTurnCount
-    );
-    state.validated = [];
+const updateSnapshot = (
+  snapshot: ClientState["snapshot"],
+  validated: ClientState["validated"],
+  turnCount: number
+) => {
+  if (snapshot.turnCount < turnCount) {
+    snapshot = progressGame(snapshot, validated, turnCount);
+    validated = validated.filter((action) => action.turnCount > turnCount);
   }
-
-  return state;
-};
-
-const updateValidated = (state: ClientState, payload: ActionPayload) => {
-  state.validated.push(payload);
-  if (payload.playerId === state.playerId) {
-    state.optimistic.shift()!; // const old = state.optimistic.shift()!;
-    // if (old.action === payload.action) {
-    //   return state; // can we use this somehow?
-    // }
-  }
-
-  return state;
+  return { snapshot, validated };
 };
 
 const updateCooldowns = (state: ClientState) => {
