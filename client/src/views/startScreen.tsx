@@ -50,7 +50,7 @@ const Title = () => {
   return (
     <div className={`flex justify-center h-36 gap-10 ${styles.Bounce}`}>
       <img src={playerVisible ? hemmetcolor : skull} className="w-40 h-40" />
-      <div className={`translate-y-6 ${styles.Title}`}>BEATDOWN</div>
+      <div className={`translate-y-6 ${styles.Title}`}>ARRHYTHMIA</div>
       <img src={playerVisible ? binkicolor : skull} className="w-40 h-40" />
     </div>
   );

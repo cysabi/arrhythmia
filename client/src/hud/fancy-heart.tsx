@@ -3,7 +3,7 @@ const SIZER = {
   big: "h-8 w-8",
 };
 
-import heart from "/heart.svg";
+import heart from "/heartgem.svg";
 
 export function FancyHeart({
   size,

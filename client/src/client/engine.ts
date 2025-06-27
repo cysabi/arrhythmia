@@ -12,24 +12,25 @@ import type {
 import {
   DEFAULT_HEALTH,
   DEFAULT_PLAYER_POSITIONS,
-  WALL_HEIGHT,
-  WALL_WIDTH,
   WALL_POSITIONS,
   BOMB_TIME,
+  WALL_HEIGHT,
+  WALL_WIDTH,
 } from "./gameDefaults";
 
 let projectileId = 0;
 
-const initialState: GameState = {
-  map: {
-    height: WALL_HEIGHT,
-    width: WALL_WIDTH,
-  },
-  entities: [],
-  turnCount: 0,
-};
+const getDefaultPlayerEntities = (
+  props:
+    | {
+        playerId: string;
+        peerIds: string[];
+      }
+    | undefined = undefined
+): Entity[] => {
+  if (props === undefined) return [];
+  const { playerId, peerIds } = props;
 
-const getDefaultPlayerEntities = (playerId: ID, peerIds: ID[]): Entity[] => {
   return peerIds.map((pid, i) => {
     const [position, facing] = DEFAULT_PLAYER_POSITIONS[i];
     return {
@@ -386,19 +387,20 @@ export function initGame(
         peerIds: string[];
       }
     | undefined = undefined
-): GameState {
-  const game = structuredClone(initialState);
-  if (props === undefined) return game;
+) {
+  const gameState: GameState = {
+    map: {
+      height: WALL_HEIGHT,
+      width: WALL_WIDTH,
+    },
+    entities: [],
+    turnCount: 0,
+  };
 
-  const { playerId, peerIds } = props;
-
-  const initialEntities = [
-    ...getDefaultPlayerEntities(playerId, peerIds),
+  gameState.entities = [
+    ...getDefaultPlayerEntities(props),
     ...getWallEntities(WALL_POSITIONS),
   ];
 
-  return {
-    ...game,
-    entities: initialEntities,
-  };
+  return gameState;
 }

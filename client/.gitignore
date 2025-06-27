@@ -24,4 +24,4 @@ dist-ssr
 *.sw?
 
 # Binary server build
-server/crypt-of-the-duel
+server/arrhythmia
