@@ -9,42 +9,20 @@ import srcBasic from "/projectile-basic.svg";
 import srcBomb from "/projectile-bomb.svg";
 import srcDiag from "/projectile-asplode2.svg";
 
-const getWinner = (view: GameState): Player | null => {
-  const { entities } = view;
-  const playersAlive: Player[] = entities.filter(
-    (e): e is Player => e.type === "player" && e.health > 0
-  );
-  return playersAlive.length === 1 ? playersAlive[0] : null;
-};
-
 function App() {
-  const { ws, conductor, view, playerId, tooltip, lobbies, cooldowns } =
-    useClient();
+  const { view, send, status } = useClient();
 
-  if (!playerId) {
-    return (
-      <div className={`flex justify-center items-center w-screen h-screen`}>
-        <div className="flex flex-col items-center gap-5">
-          <div className={`text-center`}>connecting...</div>
-        </div>
-      </div>
-    );
+  console.log(status);
+
+  if (status.state !== "play") {
+    return <StartScreen status={status} send={send} />;
   }
 
-  if (conductor.status !== "playing") {
-    return (
-      <StartScreen
-        status={conductor.status}
-        lobbies={lobbies}
-        me={playerId}
-        send={ws.send}
-      />
-    );
-  }
-
-  const winner = getWinner(view);
-  if (winner) {
-    return <GameOverScreen winner={winner}></GameOverScreen>;
+  if (!import.meta.env.DEV) {
+    const winner = getWinner(view);
+    if (winner) {
+      return <GameOverScreen winner={winner}></GameOverScreen>;
+    }
   }
 
   return (
@@ -52,18 +30,22 @@ function App() {
       <div className="flex items-center justify-center h-[80svh]">
         <Board
           gameState={view}
-          playerId={playerId}
-          tooltip={tooltip}
-          beatBar={<BeatBar barProps={conductor.barProps} />}
+          playerId={status.playerId}
+          tooltip={status.tooltip}
+          beatBar={<BeatBar barProps={status.barProps} />}
         />
       </div>
       <div className="20svh max-w-[80svh] mx-auto w-full">
         <div className="flex items-center justify-between">
           <Hud devFlag={false} gameState={view} />
           <div className="flex gap-4">
-            <Ability num="1" src={srcBasic} cooldown={cooldowns.basic} />
-            <Ability num="2" src={srcBomb} cooldown={cooldowns.bomb} />
-            <Ability num="3" src={srcDiag} cooldown={cooldowns.diag_cross} />
+            <Ability num="1" src={srcBasic} cooldown={status.cooldowns.basic} />
+            <Ability num="2" src={srcBomb} cooldown={status.cooldowns.bomb} />
+            <Ability
+              num="3"
+              src={srcDiag}
+              cooldown={status.cooldowns.diag_cross}
+            />
           </div>
         </div>
       </div>
@@ -97,6 +79,14 @@ const Ability = ({
       <div className="text-[#808080]">{num}</div>
     </div>
   );
+};
+
+const getWinner = (view: GameState): Player | null => {
+  const { entities } = view;
+  const playersAlive: Player[] = entities.filter(
+    (e): e is Player => e.type === "player" && e.health > 0
+  );
+  return playersAlive.length === 1 ? playersAlive[0] : null;
 };
 
 export default App;

@@ -29,7 +29,7 @@ const reducer = (state: ClientState, event: ClientEvent): ClientState => {
     case "RECEIVED_START": {
       const { playerId, peerIds, startAt } = event.payload;
       return {
-        ...initialState,
+        ...state,
         playerId,
         snapshot: initGame({ playerId, peerIds }),
         startAt,

@@ -90,7 +90,6 @@ func main() {
 			}
 
 		case PayloadStart:
-			// TODO: CY - only send to members of lobby
 			waiting_room.Start(pid)
 
 			// set when/them

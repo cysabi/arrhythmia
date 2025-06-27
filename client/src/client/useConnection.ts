@@ -1,5 +1,5 @@
 import React, { useCallback, type ActionDispatch } from "react";
-import type { Ability, Action, ProjectileType } from "../types";
+import type { Ability, Action } from "../types";
 import type { ClientEvent } from "./useGameState";
 
 const useConnection = (dispatch: ActionDispatch<[client: ClientEvent]>) => {

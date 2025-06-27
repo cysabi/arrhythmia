@@ -4,5 +4,11 @@
     "web": {
       "port": 5199
     }
+  },
+  "images": {
+    "default": {
+      "dockerfile": "Dockerfile",
+      "context": "./server"
+    }
   }
 }
