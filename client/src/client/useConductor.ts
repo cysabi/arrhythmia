@@ -9,7 +9,7 @@ import type { ClientEvent } from "./useGameState";
 import * as Tone from "tone";
 import { TransportClass } from "tone/build/esm/core/clock/Transport";
 import { DrawClass } from "tone/build/esm/core/util/Draw";
-import song from "/song.wav";
+import song from "/song.m4a";
 import clap from "/clap.wav";
 
 const track = {
