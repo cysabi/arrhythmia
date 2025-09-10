@@ -2,6 +2,12 @@
 
 A realtime multi-player rhythm game inspired by Crypt of the NecroDancer
 
+
+
+https://github.com/user-attachments/assets/aa317988-fc6a-4e83-b6f8-22d590f9ee8f
+
+
+
 ## Running the app locally
 
 ### Server
