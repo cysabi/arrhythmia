@@ -1,5 +1,7 @@
 # arrhythmia
 
+A realtime multi-player rhythm game inspired by Crypt of the NecroDancer
+
 ## Running the app locally
 
 ### Server
