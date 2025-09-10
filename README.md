@@ -1,12 +1,13 @@
 # arrhythmia
 
-A realtime multi-player rhythm game inspired by Crypt of the NecroDancer
-
-
+A realtime multi-player rhythm game where you move and attack in sync with the beat of the music. Inspired by Crypt of the NecroDancer.
 
 https://github.com/user-attachments/assets/aa317988-fc6a-4e83-b6f8-22d590f9ee8f
 
+### Tech Stack
 
+- **Frontend**: React with TypeScript
+- **Backend**: Go with WebSocket support
 
 ## Running the app locally
 
@@ -25,6 +26,8 @@ Install node! Then you can do:
 2. `npm run dev`
 
 ### Lobbies
+
+Create and join game rooms with friends
 
 - API to discover current state (lobbies, member count)
 - API to join a lobby
